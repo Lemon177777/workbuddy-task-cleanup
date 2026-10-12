@@ -20,7 +20,7 @@
 
 <br />
 
-[**快速开始**](#-快速开始) &nbsp;·&nbsp; [**三重保护**](#-三重保护) &nbsp;·&nbsp; [**分级说明**](#-四级分级) &nbsp;·&nbsp; [**常见问题**](#-常见问题-faq)
+[**快速开始**](#-快速开始) &nbsp;·&nbsp; [**三重保护**](#-三重保护) &nbsp;·&nbsp; [**分级说明**](#-四级分级) &nbsp;·&nbsp; [**常见问题**](#-常见问题-faq) &nbsp;·&nbsp; [**下载 ↓**](https://github.com/Lemon177777/workbuddy-task-cleanup/releases/latest)
 
 </div>
 
@@ -135,7 +135,8 @@ SELECT id, name, status, cwds, deleted_at FROM automations WHERE deleted_at IS N
 <details open>
 <summary><b>方式一 · 下载分发包（推荐）</b></summary>
 
-从本仓库的 [`dist/workbuddy-task-cleanup.zip`](./dist/workbuddy-task-cleanup.zip) 下载，解压到 skills 目录。
+从 [**Releases**](https://github.com/Lemon177777/workbuddy-task-cleanup/releases/latest) 下载 `workbuddy-task-cleanup.zip`
+（或直接取仓库内的 [`dist/workbuddy-task-cleanup.zip`](./dist/workbuddy-task-cleanup.zip)），解压到 skills 目录。
 
 **Windows（PowerShell）**
 
