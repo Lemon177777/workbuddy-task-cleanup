@@ -53,15 +53,54 @@ live_cwds = {norm(r[0]) for r in con.execute("SELECT cwd FROM sessions WHERE del
 - `~/.workbuddy/blobs/` —— 内容寻址存储，**存活任务也在引用**，删除会破坏数据。
 - `~/.workbuddy/workbuddy.db`（及 `-wal`/`-shm`）、`settings.json`、`mcp.json`、`sessions/*.json`。
 - 任何存活会话的 `cwd` 目录。
+- **任何被自动化任务引用的目录**（见下节）。
+- **任何含 `.workbuddy/memory/` 的工作区**（记忆优先，宁可留着）。
 - 当天的 `logs/<今天>/` 与 `logs/sandbox/<今天>/`。
 
-## ⚠️ 两个已知坑
+## ⚠️ 第二张权威表：`automations`（v1.1 新增，v1.0 的盲区）
+
+自动化任务的工作目录**不存在于 `sessions` 表**，必须单独查：
+
+```sql
+SELECT id, name, status, cwds, deleted_at FROM automations;
+```
+
+- `cwds` 是 **JSON 数组**（如 `["C:\\Users\\...\\2026-10-03-18-10-05"]`），不是普通字符串 —— 直接按逗号切会解析失败。
+- 必须过滤 `deleted_at IS NULL`，否则会把用户已删的旧任务也算进来（会造成误报）。
+- `status` 为 `ACTIVE` 的任务若指向已消失目录，运行时会失败 —— 扫描报告应把它作为**体检项**列出并提示用户。
+
+**为什么要紧**：一个工作区完全可能"没有任何存活会话引用"，却正是某个定时任务的运行目录。
+只看 `sessions` 就删，会悄悄打断用户的自动化。检测到引用时一律跳过，并在报告里注明是哪个任务。
+
+同理，`automation_runs.source_cwd` 记录了历史运行的来源目录，可用于交叉核对。
+
+## ⚠️ 工作区记忆：`.workbuddy/memory/`（v1.1 新增，v1.0 的盲区）
+
+工作区目录下的 `.workbuddy/memory/` 存着**项目长期记忆**：
+
+```
+<工作区>/.workbuddy/memory/
+├── YYYY-MM-DD.md                        # 每日工作日志
+└── automations/<automation-id>/memory.md # 自动化任务自己的记忆
+```
+
+v1.0 把"只有 `.workbuddy` 的目录"判定为空壳并直接删除 —— 若该目录只含记忆，
+就会**连同记忆一起删掉**。判别规则必须改为：
+
+- 有非 `.workbuddy` 文件 **或** `.workbuddy/memory/` 下有文件 → 归入 **B2**（需确认），并列出记忆文件
+- 两者皆无 → 才是真·空壳 **B1**
+
+## ⚠️ 三个已知坑
 
 1. **safe-delete 钩子延迟落盘**：本机 `SAFE_DELETE_FAIL_CLOSED` 钩子会把删除转成回收站操作，
    且可能在 Python `rmtree()` 返回**之后**才真正落盘。首次清理后目录可能仍短暂存在 ——
    **必须二次核验**（重跑 `wb_scan.py`），不要仅凭首轮输出下结论。
 2. **`logs/sandbox` 不能整目录删**：整目录会失败（`Some operations were aborted`）。
    必须按日期子目录（如 `20261009/`）逐个删，并保留当天。
+3. **删除钩子会改写返回码**：部分环境（如本机的 SAFE_DELETE_FAIL_CLOSED 钩子）会**代劳删除**，
+   但把 `SHFileOperationW` 的返回值改成非 0（实测 rc=2，而文件确实已进回收站）。
+   → 因此**一律以实际效果为准**：调用后检查路径是否消失，而不是看返回值。
+   同理，`shutil.rmtree` 也可能"报错但其实成功了"——删除后务必**二次核验**。
 
 ## 参考体量（2026-10-11 实测，80 个已删会话）
 

@@ -47,10 +47,10 @@
   <g font-family="ui-sans-serif,-apple-system,'Segoe UI','Microsoft YaHei','PingFang SC','Hiragino Sans GB',sans-serif">
 
     <!-- eyebrow -->
-    <rect x="72" y="52" width="272" height="34" rx="17" fill="#ffffff" opacity="0.07"/>
-    <rect x="72.5" y="52.5" width="271" height="33" rx="16.5" fill="none" stroke="#93c5fd" stroke-opacity="0.35"/>
+    <rect x="72" y="52" width="356" height="34" rx="17" fill="#ffffff" opacity="0.07"/>
+    <rect x="72.5" y="52.5" width="355" height="33" rx="16.5" fill="none" stroke="#93c5fd" stroke-opacity="0.35"/>
     <circle cx="94" cy="69" r="4" fill="#4ade80"/>
-    <text x="108" y="74" font-size="15" fill="#bfdbfe" letter-spacing="0.7">WorkBuddy Skill · 磁盘维护</text>
+    <text x="108" y="74" font-size="15" fill="#bfdbfe" letter-spacing="0.7">WorkBuddy Skill · 磁盘维护 · v1.1</text>
 
     <!-- title -->
     <text x="72" y="180" font-size="60" font-weight="700" fill="#ffffff" letter-spacing="0.5">WorkBuddy 任务垃圾清理</text>
@@ -65,11 +65,11 @@
       <rect x="242" y="288" width="146" height="34" rx="17" fill="#ffffff" opacity="0.07"/>
       <text x="315" y="311" text-anchor="middle">只读扫描优先</text>
 
-      <rect x="400" y="288" width="118" height="34" rx="17" fill="#ffffff" opacity="0.07"/>
-      <text x="459" y="311" text-anchor="middle">四级分级</text>
+      <rect x="400" y="288" width="128" height="34" rx="17" fill="#ffffff" opacity="0.07"/>
+      <text x="464" y="311" text-anchor="middle">三重保护</text>
 
-      <rect x="530" y="288" width="146" height="34" rx="17" fill="#ffffff" opacity="0.07"/>
-      <text x="603" y="311" text-anchor="middle">确认后才动手</text>
+      <rect x="540" y="288" width="152" height="34" rx="17" fill="#ffffff" opacity="0.07"/>
+      <text x="616" y="311" text-anchor="middle">默认进回收站</text>
     </g>
   </g>
 

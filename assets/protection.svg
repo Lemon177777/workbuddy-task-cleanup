@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 470" width="100%" role="img" aria-label="三重保护：存活会话工作区、自动化任务工作目录、工作区记忆，任一命中即绝不删除">
+  <title>三重保护 · v1.1 新增</title>
+  <defs>
+    <linearGradient id="pbg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0b1222"/>
+      <stop offset="100%" stop-color="#090e1b"/>
+    </linearGradient>
+    <linearGradient id="p1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#22c55e"/><stop offset="100%" stop-color="#4ade80"/>
+    </linearGradient>
+    <linearGradient id="p2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f43f5e"/><stop offset="100%" stop-color="#fb7185"/>
+    </linearGradient>
+    <linearGradient id="p3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#8b5cf6"/><stop offset="100%" stop-color="#a78bfa"/>
+    </linearGradient>
+    <radialGradient id="pg2" cx="50%" cy="20%" r="55%">
+      <stop offset="0%" stop-color="#f43f5e" stop-opacity="0.20"/>
+      <stop offset="100%" stop-color="#f43f5e" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1280" height="470" fill="url(#pbg)"/>
+
+  <g font-family="ui-sans-serif,-apple-system,'Segoe UI','Microsoft YaHei','PingFang SC',sans-serif">
+    <text x="56" y="60" font-size="28.5" font-weight="700" fill="#ffffff">三重保护</text>
+    <text x="56" y="92" font-size="16" fill="#8fa6c9">清理前先建三个保护集合 —— 任一命中，绝不删除</text>
+    <rect x="56" y="110" width="72" height="3" rx="1.5" fill="#60a5fa"/>
+  </g>
+
+  <!-- Card 1 -->
+  <g font-family="ui-sans-serif,-apple-system,'Segoe UI','Microsoft YaHei','PingFang SC',sans-serif">
+    <rect x="56" y="138" width="373" height="252" rx="18" fill="#ffffff" opacity="0.045"/>
+    <rect x="56.5" y="138.5" width="372" height="251" rx="17.5" fill="none" stroke="#4ade80" stroke-opacity="0.35"/>
+    <rect x="56" y="138" width="373" height="5" rx="2.5" fill="url(#p1)"/>
+    <circle cx="100" cy="192" r="21" fill="#22c55e" opacity="0.18"/>
+    <text x="100" y="200" text-anchor="middle" font-size="20" font-weight="700" fill="#4ade80">1</text>
+    <text x="134" y="200" font-size="20" font-weight="600" fill="#ffffff">存活会话的工作区</text>
+    <text x="84" y="238" font-size="14.5" fill="#7b8dad">sessions.deleted_at IS NULL</text>
+    <text x="84" y="276" font-size="16" fill="#cfe6d6">正在被你使用的对话</text>
+    <text x="84" y="302" font-size="16" fill="#cfe6d6">其 cwd 一律跳过</text>
+    <text x="84" y="344" font-size="14.5" fill="#7b8dad">清理后还会反过来校验：</text>
+    <text x="84" y="366" font-size="14.5" fill="#7b8dad">存活会话工作区缺失必须 = 0</text>
+  </g>
+
+  <!-- Card 2 -->
+  <g font-family="ui-sans-serif,-apple-system,'Segoe UI','Microsoft YaHei','PingFang SC',sans-serif">
+    <rect x="453" y="138" width="373" height="252" rx="18" fill="#f43f5e" opacity="0.075"/>
+    <rect x="453.5" y="138.5" width="372" height="251" rx="17.5" fill="none" stroke="#fb7185" stroke-opacity="0.45"/>
+    <rect x="453" y="138" width="373" height="5" rx="2.5" fill="url(#p2)"/>
+    <rect x="702" y="126" width="112" height="26" rx="13" fill="#f43f5e"/>
+    <text x="758" y="144" text-anchor="middle" font-size="13" font-weight="700" fill="#2a0b12">v1.0 盲区</text>
+    <circle cx="497" cy="192" r="21" fill="#f43f5e" opacity="0.20"/>
+    <text x="497" y="200" text-anchor="middle" font-size="20" font-weight="700" fill="#fb7185">2</text>
+    <text x="531" y="200" font-size="20" font-weight="600" fill="#ffffff">自动化任务的工作目录</text>
+    <text x="481" y="238" font-size="14.5" fill="#b9869a">automations.cwds （JSON 数组）</text>
+    <text x="481" y="276" font-size="16" fill="#ffd9e0">它不属于 sessions 表 ——</text>
+    <text x="481" y="302" font-size="16" fill="#ffd9e0">可能与任何存活会话都无关</text>
+    <text x="481" y="336" font-size="15" fill="#fda4af">删掉 = 悄悄打断你的定时任务</text>
+    <text x="481" y="366" font-size="14.5" fill="#b9869a">引用已消失目录的任务会被列为体检项</text>
+  </g>
+
+  <!-- Card 3 -->
+  <g font-family="ui-sans-serif,-apple-system,'Segoe UI','Microsoft YaHei','PingFang SC',sans-serif">
+    <rect x="850" y="138" width="373" height="252" rx="18" fill="#8b5cf6" opacity="0.085"/>
+    <rect x="850.5" y="138.5" width="372" height="251" rx="17.5" fill="none" stroke="#c4b5fd" stroke-opacity="0.42"/>
+    <rect x="850" y="138" width="373" height="5" rx="2.5" fill="url(#p3)"/>
+    <rect x="1099" y="126" width="112" height="26" rx="13" fill="#8b5cf6"/>
+    <text x="1155" y="144" text-anchor="middle" font-size="13" font-weight="700" fill="#1e1033">v1.0 盲区</text>
+    <circle cx="894" cy="192" r="21" fill="#8b5cf6" opacity="0.22"/>
+    <text x="894" y="200" text-anchor="middle" font-size="20" font-weight="700" fill="#c4b5fd">3</text>
+    <text x="928" y="200" font-size="20" font-weight="600" fill="#ffffff">工作区记忆</text>
+    <text x="878" y="238" font-size="14.5" fill="#a99bc4">.workbuddy/memory/</text>
+    <text x="878" y="276" font-size="16" fill="#e4dcf7">v1.0 把「只有 .workbuddy 的目录」</text>
+    <text x="878" y="302" font-size="16" fill="#e4dcf7">当空壳直接删 —— 可能连记忆一起没了</text>
+    <text x="878" y="336" font-size="15" fill="#c4b5fd">现升级为 B2，逐个列文件后人工确认</text>
+    <text x="878" y="366" font-size="14.5" fill="#a99bc4">含记忆的目录再也不会被判成 B1</text>
+  </g>
+
+  <text x="640" y="428" text-anchor="middle" font-size="15" fill="#7b8dad"
+        font-family="ui-sans-serif,-apple-system,'Segoe UI','Microsoft YaHei','PingFang SC',sans-serif">
+    被保护的工作区会出现在报告里，并注明原因（存活会话 / 哪个自动化任务引用）
+  </text>
+</svg>

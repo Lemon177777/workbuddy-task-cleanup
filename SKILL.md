@@ -2,11 +2,11 @@
 name: workbuddy-task-cleanup
 display_name: "WorkBuddy 任务垃圾清理"
 display_name_en: "WorkBuddy Task Junk Cleanup"
-description: "清理 WorkBuddy 自身数据目录中「已删除任务」遗留的孤儿文件。当用户说「清理 workbuddy 垃圾」「清理已删除任务的残留」「WorkBuddy 占空间太大」「清理会话残留 / 缓存 / 日志」「clean up WorkBuddy junk」时使用。基于 workbuddy.db 的 sessions.deleted_at 精确区分已删/存活会话，再按会话 id 与工作区路径定位孤儿，分级（A 内部缓存与转录 / B1 空壳工作区 / B2 含成果文件的孤儿工作区 / C 诊断日志与追踪）盘点并清理，全程先只读扫描、呈现报告、取得用户确认后才动手，绝不误删存活会话数据。"
-description_zh: "清理 WorkBuddy 中已删除任务的遗留垃圾文件。依据 workbuddy.db 的 deleted_at 字段精确定位已删会话，分四级盘点（内部缓存与转录、空壳工作区、含成果文件的孤儿工作区、诊断日志与追踪），先只读扫描出报告，用户确认后再清理。"
-description_en: "Clean up orphan files left behind by deleted tasks in WorkBuddy's own data directories. Uses sessions.deleted_at in workbuddy.db to separate deleted from live sessions, then locates orphans by session id and workspace path across four tiers (internal caches & transcripts, empty shell workspaces, orphan workspaces containing user artifacts, diagnostic logs & traces). Scan is read-only first; deletion only after explicit user confirmation."
+description: "清理 WorkBuddy 自身数据目录中「已删除任务」遗留的孤儿文件。当用户说「清理 workbuddy 垃圾」「清理已删除任务的残留」「WorkBuddy 占空间太大」「清理会话残留 / 缓存 / 日志」「clean up WorkBuddy junk」时使用。基于 workbuddy.db 的 sessions.deleted_at 精确区分已删/存活会话，再按会话 id 与工作区路径定位孤儿，分级（A 内部缓存与转录 / B1 真空壳工作区 / B2 含成果文件或工作区记忆的孤儿工作区 / C 诊断日志与追踪）盘点并清理。内置三重保护：存活会话工作区、**自动化任务引用的工作目录**、**含工作区记忆的目录**，一律不删；默认移入回收站而非永久删除，全程先只读扫描、呈现报告、取得用户确认后才动手。"
+description_zh: "清理 WorkBuddy 中已删除任务的遗留垃圾文件。依据 workbuddy.db 的 sessions.deleted_at 精确定位已删会话，并保护被自动化任务引用的工作目录与含工作区记忆的目录。分四级盘点（内部缓存与转录、真空壳工作区、含成果文件或记忆的孤儿工作区、诊断日志与追踪），默认移入回收站，用户确认后再清理。"
+description_en: "Clean up orphan files left behind by deleted tasks in WorkBuddy's own data directories. Uses sessions.deleted_at in workbuddy.db to separate deleted from live sessions, and protects directories referenced by automations plus any workspace containing .workbuddy/memory. Four tiers: internal caches & transcripts, true empty shells, orphan workspaces holding user artifacts or memory, diagnostic logs & traces. Trash-by-default; deletion only after explicit user confirmation."
 agent_created: true
-version: 1.0.1
+version: 1.1.0
 tags: [workbuddy, cleanup, 清理, 垃圾清理, 磁盘空间, deleted-task, orphan, cache, logs, traces, 缓存, 日志, 残留, 会话, session, maintenance, 维护]
 ---
 
@@ -35,9 +35,24 @@ tags: [workbuddy, cleanup, 清理, 垃圾清理, 磁盘空间, deleted-task, orp
 | 级别 | 内容 | 风险 |
 |---|---|---|
 | **A** | 内部缓存 + 会话转录（`tasks/`、`artifact-index/`、`changes-index/`、`changes-detail/`、`file-history/`、`assistant-display/`、`projects/`） | 低，纯内部数据 |
-| **B1** | 只剩 `.workbuddy` 的空壳孤儿工作区 `~/WorkBuddy/<ts>` | 低 |
-| **B2** | **含用户成果文件**的孤儿工作区 | **高，须逐个确认** |
+| **B1** | 真·空壳孤儿工作区（无用户文件、**无工作区记忆**） | 低 |
+| **B2** | **含用户成果文件 或 含 `.workbuddy/memory/` 工作区记忆**的孤儿工作区 | **高，须逐个确认** |
 | **C** | 诊断：`traces/`、`logs/<日期>/`、`logs/sandbox/` | 中，删后失去历史排障线索 |
+| **🔒** | **受保护**：被存活会话 或 **自动化任务**引用的工作区 | **绝不删除** |
+
+## 三重保护（v1.1 新增，务必理解）
+
+清理前必须建立三个保护集合，任一命中即**绝不删除**：
+
+1. **存活会话的 cwd** —— `sessions.deleted_at IS NULL` 的工作目录。
+2. **自动化任务的工作目录** —— `automations.cwds` 字段（JSON 数组）。
+   ⚠️ **这是 v1.0 的盲区**：自动化任务的工作目录与 `sessions` 毫无关系，
+   一个工作区可能"没有任何存活会话引用"、却正是某个定时任务的运行目录。
+   删掉它 = 悄悄打断用户的定时任务。查询时须过滤 `automations.deleted_at IS NULL`。
+3. **工作区记忆** —— `<工作区>/.workbuddy/memory/` 下的任何文件。
+   ⚠️ **这是 v1.0 的第二个盲区**：v1.0 把"只有 `.workbuddy` 的目录"当空壳直接删，
+   但 `.workbuddy/memory/` 里可能存着该项目的长期记忆与自动化任务记忆。
+   含记忆的工作区必须升级为 B2、列出记忆文件、由用户确认。
 
 ---
 
@@ -56,7 +71,14 @@ tags: [workbuddy, cleanup, 清理, 垃圾清理, 磁盘空间, deleted-task, orp
 "<PYTHON>" "<SKILL_DIR>/scripts/wb_scan.py" --json ~/wb_cleanup_report.json
 ```
 
-输出分四级的数量、体积，以及 **B2 每个目录的完整文件清单**、**存活会话工作区完整性**。这一步只读，可放心执行。
+输出分四级的数量、体积，以及 **B2 每个目录的完整文件清单与记忆文件**、**受保护工作区**、**存活会话工作区完整性**、**失效自动化体检**。这一步只读，可放心执行。
+
+`--check` 参数在「有残留或异常」时返回退出码 1，便于挂定时任务。
+
+清理脚本自身可先自检（用临时目录造数据，不动真实数据）：
+```bash
+"<PYTHON>" "<SKILL_DIR>/scripts/wb_selftest.py"     # 应输出「通过 23 项，失败 0 项」
+```
 
 ## Step 2 · 分类与呈现
 
@@ -83,16 +105,33 @@ tags: [workbuddy, cleanup, 清理, 垃圾清理, 磁盘空间, deleted-task, orp
 # 预览（默认 dry-run，不落盘）
 "<PYTHON>" "<SKILL_DIR>/scripts/wb_clean.py" --tiers A,B1,C
 
-# 执行
+# 执行 —— 默认移入回收站，可反悔
 "<PYTHON>" "<SKILL_DIR>/scripts/wb_clean.py" --tiers A,B1,C --apply
 
-# 含 B2（必须额外 --include-b2）
-"<PYTHON>" "<SKILL_DIR>/scripts/wb_clean.py" --tiers A,B1,C,B2 --include-b2 --apply
+# 永久删除（必须显式声明，危险）
+"<PYTHON>" "<SKILL_DIR>/scripts/wb_clean.py" --tiers A,B1,C --apply --no-trash
+
+# 含 B2：必须加 --include-b2；可用 --keep-b2 选择性保留
+"<PYTHON>" "<SKILL_DIR>/scripts/wb_clean.py" --tiers A,B1,C,B2 --include-b2 --apply \
+    --keep-b2 "2026-09-14-22-35-03"
+
+# 只清旧数据 + 留痕
+"<PYTHON>" "<SKILL_DIR>/scripts/wb_clean.py" --tiers C --older-than 30 --apply --log clean.json
 ```
 
-- 脚本自动跳过：存活会话工作区、`blobs/`、`settings.json`、`workbuddy.db`、`mcp.json`、当天日志与当天 sandbox。
-- 若用户选"移入回收站"而非永久删除，脚本走 OS 回收站机制（本机 safe-delete 钩子天然如此）；若用户明确要永久删除，直接用脚本删除。
+| 参数 | 说明 |
+|---|---|
+| `--tiers` | 类别，逗号分隔：`A,B1,B2,C` |
+| `--apply` | 真正执行；缺省为 dry-run |
+| `--to-trash` / `--no-trash` | 移入回收站（**默认**）/ 永久删除 |
+| `--include-b2` | 清理 B2 的必要开关 |
+| `--keep-b2 NAMES` | B2 中要保留的目录名，逗号分隔 |
+| `--older-than DAYS` | 只清理修改时间早于 N 天的项 |
+| `--log FILE` | 把删除清单写入 JSON 留痕 |
+
+- 脚本自动跳过：存活会话工作区、**自动化任务工作目录**、`blobs/`、`settings.json`、`workbuddy.db`、`mcp.json`、当天日志与当天 sandbox。
 - 遇到 `[safe-delete]` 报错属正常（被占用/钩子拦截），记录下来稍后重跑补齐即可。
+- **注意**：部分环境存在「删除钩子」，会代劳删除但返回被改写的错误码。本脚本**以实际效果为准**（操作后路径是否消失），不单纯依赖返回值。
 
 ## Step 5 · 二次核验（必做）
 
@@ -114,9 +153,12 @@ tags: [workbuddy, cleanup, 清理, 垃圾清理, 磁盘空间, deleted-task, orp
 1. **先扫描、后呈现、再确认、末执行** —— 顺序不可颠倒。
 2. **不动 DB**。只读打开，绝不写。
 3. **不碰 `blobs/`** —— 存活任务也在引用。
-4. **B2 必须逐个列文件 + 二次确认**，因为那是用户的成果文件，不是缓存。
-5. **删完必须二次核验**，并报告"存活会话工作区缺失 0"。
-6. 保留当天的 `logs/<今天>/` 与 `logs/sandbox/<今天>/`。
-7. 若用户要求"永久删除"，先加粗警告并列出受影响文件路径，取得明确同意后才执行。
+4. **不删任何被自动化任务引用的工作目录** —— 删掉等于悄悄打断用户的定时任务。
+5. **不把含 `.workbuddy/memory/` 的工作区当空壳** —— 那是项目长期记忆。
+6. **B2 必须逐个列文件 + 二次确认**，因为那是用户的成果文件或记忆，不是缓存。
+7. **默认走回收站**；用户明确要求永久删除时才加 `--no-trash`，并先加粗警告、列出受影响路径。
+8. **删完必须二次核验**，并报告"存活会话工作区缺失 0"。
+9. 保留当天的 `logs/<今天>/` 与 `logs/sandbox/<今天>/`。
+10. **改动脚本后先跑 `wb_selftest.py`**，23 项全绿再交付。
 
 细节与体量参考见 `references/orphan-map.md`。

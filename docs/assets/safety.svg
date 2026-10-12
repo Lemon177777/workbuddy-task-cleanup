@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 500" width="100%" role="img" aria-label="判定依据与永久豁免名单">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 552" width="100%" role="img" aria-label="判定依据与永久豁免名单">
   <title>判定依据与安全边界</title>
   <defs>
     <linearGradient id="sbg" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -15,9 +15,9 @@
     </radialGradient>
   </defs>
 
-  <rect width="1280" height="500" fill="url(#sbg)"/>
-  <rect width="1280" height="500" fill="url(#sglowL)"/>
-  <rect width="1280" height="500" fill="url(#sglowR)"/>
+  <rect width="1280" height="552" fill="url(#sbg)"/>
+  <rect width="1280" height="552" fill="url(#sglowL)"/>
+  <rect width="1280" height="552" fill="url(#sglowR)"/>
 
   <g font-family="ui-sans-serif,-apple-system,'Segoe UI','Microsoft YaHei','PingFang SC',sans-serif">
 
@@ -55,31 +55,44 @@
 
     <!-- exemptions -->
     <text x="180" y="412" font-size="16.5" font-weight="600" fill="#ffffff">永久豁免名单（无条件跳过）</text>
+    <text x="404" y="412" font-size="14" fill="#7b8dad">v1.1 新增：自动化任务目录 · 工作区记忆</text>
 
     <g font-size="14.5">
-      <rect x="180" y="428" width="152" height="36" rx="18" fill="#f43f5e" opacity="0.14"/>
-      <rect x="180.5" y="428.5" width="151" height="35" rx="17.5" fill="none" stroke="#fb7185" stroke-opacity="0.35"/>
-      <text x="256" y="451" text-anchor="middle" fill="#fda4af">blobs/ 内容寻址存储</text>
+      <rect x="180" y="428" width="140" height="36" rx="18" fill="#f43f5e" opacity="0.14"/>
+      <rect x="180.5" y="428.5" width="139" height="35" rx="17.5" fill="none" stroke="#fb7185" stroke-opacity="0.35"/>
+      <text x="250" y="451" text-anchor="middle" fill="#fda4af">blobs/ 只读存储</text>
 
-      <rect x="340" y="428" width="130" height="36" rx="18" fill="#f43f5e" opacity="0.14"/>
-      <rect x="340.5" y="428.5" width="129" height="35" rx="17.5" fill="none" stroke="#fb7185" stroke-opacity="0.35"/>
-      <text x="405" y="451" text-anchor="middle" fill="#fda4af">workbuddy.db</text>
+      <rect x="328" y="428" width="122" height="36" rx="18" fill="#f43f5e" opacity="0.14"/>
+      <rect x="328.5" y="428.5" width="121" height="35" rx="17.5" fill="none" stroke="#fb7185" stroke-opacity="0.35"/>
+      <text x="389" y="451" text-anchor="middle" fill="#fda4af">workbuddy.db</text>
 
-      <rect x="478" y="428" width="136" height="36" rx="18" fill="#f43f5e" opacity="0.14"/>
-      <rect x="478.5" y="428.5" width="135" height="35" rx="17.5" fill="none" stroke="#fb7185" stroke-opacity="0.35"/>
-      <text x="546" y="451" text-anchor="middle" fill="#fda4af">settings.json</text>
+      <rect x="458" y="428" width="132" height="36" rx="18" fill="#f43f5e" opacity="0.14"/>
+      <rect x="458.5" y="428.5" width="131" height="35" rx="17.5" fill="none" stroke="#fb7185" stroke-opacity="0.35"/>
+      <text x="524" y="451" text-anchor="middle" fill="#fda4af">settings.json</text>
 
-      <rect x="622" y="428" width="112" height="36" rx="18" fill="#f43f5e" opacity="0.14"/>
-      <rect x="622.5" y="428.5" width="111" height="35" rx="17.5" fill="none" stroke="#fb7185" stroke-opacity="0.35"/>
-      <text x="678" y="451" text-anchor="middle" fill="#fda4af">mcp.json</text>
+      <rect x="598" y="428" width="100" height="36" rx="18" fill="#f43f5e" opacity="0.14"/>
+      <rect x="598.5" y="428.5" width="99" height="35" rx="17.5" fill="none" stroke="#fb7185" stroke-opacity="0.35"/>
+      <text x="648" y="451" text-anchor="middle" fill="#fda4af">mcp.json</text>
 
-      <rect x="742" y="428" width="176" height="36" rx="18" fill="#f43f5e" opacity="0.14"/>
-      <rect x="742.5" y="428.5" width="175" height="35" rx="17.5" fill="none" stroke="#fb7185" stroke-opacity="0.35"/>
-      <text x="830" y="451" text-anchor="middle" fill="#fda4af">sessions/*.json</text>
+      <rect x="706" y="428" width="146" height="36" rx="18" fill="#f43f5e" opacity="0.14"/>
+      <rect x="706.5" y="428.5" width="145" height="35" rx="17.5" fill="none" stroke="#fb7185" stroke-opacity="0.35"/>
+      <text x="779" y="451" text-anchor="middle" fill="#fda4af">sessions/*.json</text>
 
-      <rect x="926" y="428" width="170" height="36" rx="18" fill="#f43f5e" opacity="0.14"/>
-      <rect x="926.5" y="428.5" width="169" height="35" rx="17.5" fill="none" stroke="#fb7185" stroke-opacity="0.35"/>
-      <text x="1011" y="451" text-anchor="middle" fill="#fda4af">存活工作区 · 当天日志</text>
+      <rect x="180" y="474" width="132" height="36" rx="18" fill="#f43f5e" opacity="0.14"/>
+      <rect x="180.5" y="474.5" width="131" height="35" rx="17.5" fill="none" stroke="#fb7185" stroke-opacity="0.35"/>
+      <text x="246" y="497" text-anchor="middle" fill="#fda4af">存活会话工作区</text>
+
+      <rect x="320" y="474" width="168" height="36" rx="18" fill="#f43f5e" opacity="0.14"/>
+      <rect x="320.5" y="474.5" width="167" height="35" rx="17.5" fill="none" stroke="#fb7185" stroke-opacity="0.35"/>
+      <text x="404" y="497" text-anchor="middle" fill="#fda4af">自动化任务工作目录</text>
+
+      <rect x="496" y="474" width="160" height="36" rx="18" fill="#f43f5e" opacity="0.14"/>
+      <rect x="496.5" y="474.5" width="159" height="35" rx="17.5" fill="none" stroke="#fb7185" stroke-opacity="0.35"/>
+      <text x="576" y="497" text-anchor="middle" fill="#fda4af">含工作区记忆的目录</text>
+
+      <rect x="664" y="474" width="92" height="36" rx="18" fill="#f43f5e" opacity="0.14"/>
+      <rect x="664.5" y="474.5" width="91" height="35" rx="17.5" fill="none" stroke="#fb7185" stroke-opacity="0.35"/>
+      <text x="710" y="497" text-anchor="middle" fill="#fda4af">当天日志</text>
     </g>
   </g>
 </svg>
