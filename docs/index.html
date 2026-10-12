@@ -254,7 +254,7 @@
       <img src="assets/badge-python.svg" alt="python 3.8+ no deps" />
       <img src="assets/badge-platform.svg" alt="Windows macOS Linux" />
       <img src="assets/badge-safety.svg" alt="read-only first" />
-      <img src="assets/badge-version.svg" alt="version v1.1.0" />
+      <img src="assets/badge-version.svg" alt="version v1.2.0" />
     </div>
     <div class="hero-cta">
       <a class="btn btn-p" href="#install">开始使用 →</a>
@@ -264,8 +264,8 @@
 
     <div class="stats">
       <div class="stat"><b>≈ 3.0 GB</b><span>一次实测量可回收</span></div>
-      <div class="stat"><b>三重</b><span>保护集合，绝不误删</span></div>
-      <div class="stat"><b>23 项</b><span>自检断言全绿</span></div>
+      <div class="stat"><b>四重</b><span>保护集合，绝不误删</span></div>
+      <div class="stat"><b>54 项</b><span>自检断言全绿</span></div>
       <div class="stat"><b>0 依赖</b><span>纯 Python 标准库</span></div>
     </div>
   </header>
@@ -290,7 +290,7 @@
     <h2 class="rv">三重保护 —— 宁可少删，不可错删</h2>
     <p class="sub rv">这是 <b>v1.1 最重要的改动</b>，补上了 v1.0 的两个盲区。清理前先建三个保护集合，<b>任一命中，绝不删除</b>。</p>
 
-    <img class="figure rv" src="assets/protection.svg" alt="三重保护：存活会话工作区、自动化任务工作目录、工作区记忆" />
+    <img class="figure rv" src="assets/protection.svg" alt="四重保护：存活会话工作区、自动化任务工作目录、工作区记忆、非标准命名目录" />
 
     <div class="grid g2 rv" style="margin-top:22px">
       <div class="card">
@@ -397,6 +397,72 @@
     </div>
   </section>
 
+  <section id="context">
+    <div class="eyebrow rv">Context</div>
+    <h2 class="rv">B2 确认时，最缺的是「这是哪个项目」</h2>
+    <p class="sub rv">只给一个时间戳目录名 + 一堆文件名，你根本想不起来它是干什么的。所以 v1.2 让扫描顺手把线索查出来 —— 两张反向索引：<code>cwd → 会话</code> 与 <code>cwd → 自动化任务</code>。</p>
+
+    <div class="code rv">
+      <div class="code-top">
+        <i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i>
+        <span class="t">B2 报告片段</span>
+      </div>
+      <pre><span class="y">### 2026-10-12-20-17-57</span>   <span class="w">[62.7MB]</span>   <span class="r">用户文件+工作区记忆x1</span>
+    <span class="g">曾关联 16 个已删会话：</span><span class="c">出装查询 / 提莫 / 不需要单件装备的胜率</span>
+    <span class="g">曾被 2 条自动化引用：</span><span class="c">海斗卡片每日更新（已删） / 数据包探测（已删）</span>
+       <span class="w">58.1MB</span>  光缆台账（延庆段）.xlsx
+       <span class="w">4.2MB</span>   现场照片_测试桩/</pre>
+    </div>
+
+    <div class="warn rv" style="background:rgba(59,130,246,.08);border-color:rgba(96,165,250,.3);color:#cfe0ff">
+      📌 线索里<b>包含已删除的会话与自动化</b> —— 那是刻意的，因为「曾经属于谁」恰恰是辨认工作区最有用的信息。但它们<b>不参与保护集合</b>（保护只看 <code>deleted_at IS NULL</code>），否则会把早已删掉的旧任务当成"还在用"，造成误报。
+    </div>
+
+    <div class="card rv" style="margin-top:16px">
+      <h3><span class="ico">🩺</span>只想查一个目录？用 <code>--inspect</code></h3>
+      <p><code>python scripts/wb_scan.py --inspect ~/WorkBuddy/2026-09-14-22-35-03</code> —— 不必跑全量扫描，直接告诉你：目录是否存在、体积、记忆文件、关联了哪些会话与自动化、受不受保护、属于哪个分级。</p>
+    </div>
+  </section>
+
+  <section id="restore">
+    <div class="eyebrow rv">Restore</div>
+    <h2 class="rv">删了能还原，而且还原要精确</h2>
+    <p class="sub rv">默认移入系统回收站虽可反悔，但 Windows 上很难按路径精确捞回来（Shell API 只能枚举）。所以 v1.2 加了一个自建隔离区。</p>
+
+    <div class="grid g2 rv" style="margin-top:6px">
+      <div class="card">
+        <h3><span class="ico">🗄️</span>隔离区长什么样</h3>
+        <p><code>&lt;隔离区&gt;/manifest.json</code> 记录每条的<b>原始路径</b>、体积、类别、删除时间；<code>items/&lt;id&gt;/</code> 保留原有结构。清理时加 <code>--quarantine</code> 即可。</p>
+      </div>
+      <div class="card">
+        <h3><span class="ico">↩️</span>还原是精确的</h3>
+        <p>因为记了原始路径，<code>wb_restore.py restore --all</code> 直接放回原处，不用你去回收站里翻。跨平台行为一致。</p>
+      </div>
+    </div>
+
+    <div class="code rv">
+      <div class="code-top">
+        <i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i>
+        <span class="t">bash</span>
+        <button class="copy" data-c="python scripts/wb_clean.py --tiers A,B1,C --apply --quarantine
+python scripts/wb_restore.py list
+python scripts/wb_restore.py restore --all
+python scripts/wb_restore.py purge --older-than 30">复制</button>
+      </div>
+      <pre><span class="c"># 清理时移入隔离区（而不是直接删）</span>
+<span class="g">python</span> scripts/wb_clean.py --tiers A,B1,C --apply <span class="y">--quarantine</span>
+
+<span class="c"># 查看 / 还原 / 到期清除</span>
+<span class="g">python</span> scripts/wb_restore.py list
+<span class="g">python</span> scripts/wb_restore.py restore --all
+<span class="g">python</span> scripts/wb_restore.py purge <span class="y">--older-than</span> 30</pre>
+    </div>
+
+    <div class="warn rv" style="background:rgba(34,197,94,.08);border-color:rgba(74,222,128,.3);color:#bbf7d0">
+      💡 隔离区放在 <code>~/.workbuddy/.wb-quarantine</code>，本身就是个可以直接删的普通目录 —— 不存在「清理工具的垃圾谁来清理」的问题。<code>purge</code> 是唯一不可逆的操作，会先展示清单再要求确认。
+    </div>
+  </section>
+
   <section id="flow">
     <div class="eyebrow rv">Flow</div>
     <h2 class="rv">顺序不可颠倒</h2>
@@ -500,12 +566,16 @@ python scripts/wb_scan.py">复制</button>
         <tbody>
           <tr><td><code>--tiers A,B1,C</code></td><td><i>必填</i></td><td>要处理的类别，逗号分隔：<code>A</code> <code>B1</code> <code>B2</code> <code>C</code></td></tr>
           <tr><td><code>--apply</code></td><td>关闭</td><td>真正执行。<b>不加时只预览，不落盘</b></td></tr>
-          <tr><td><code>--to-trash</code> / <code>--no-trash</code></td><td><code>--to-trash</code></td><td>移入回收站（<b>默认</b>）/ 永久删除</td></tr>
-          <tr><td><code>--include-b2</code></td><td>关闭</td><td>清理 B2 的必要开关（含用户文件或记忆）</td></tr>
+          <tr><td><code>--to-trash</code> / <code>--no-trash</code></td><td><code>--to-trash</code></td><td>移入系统回收站（<b>默认</b>）/ 永久删除</td></tr>
+          <tr><td><code>--quarantine [DIR]</code></td><td>关闭</td><td>移入<b>自建隔离区</b>（默认 <code>~/.workbuddy/.wb-quarantine</code>），可用 <code>wb_restore.py</code> 精确还原</td></tr>
+          <tr><td><code>--include-b2</code></td><td>关闭</td><td>清理 B2 的必要开关（含用户文件、记忆，或非标准命名）</td></tr>
           <tr><td><code>--keep-b2 NAMES</code></td><td>—</td><td>B2 中要<b>保留</b>的目录名，逗号分隔</td></tr>
+          <tr><td><code>--match KEYWORD</code></td><td>—</td><td>只处理关联到该关键词的工作区（目录名 / 会话标题 / 自动化名）</td></tr>
           <tr><td><code>--older-than DAYS</code></td><td>—</td><td>只清理修改时间早于 N 天的项</td></tr>
+          <tr><td><code>--fast</code></td><td>关闭</td><td>跳过体积统计，只数数量</td></tr>
           <tr><td><code>--log FILE</code></td><td>—</td><td>把删除清单写入 JSON 留痕</td></tr>
           <tr><td><code>--json OUT</code></td><td>—</td><td>（仅 scan）额外导出一份 JSON 报告</td></tr>
+          <tr><td><code>--inspect PATH</code></td><td>—</td><td>（仅 scan）体检单个目录：这是谁的、能不能清</td></tr>
           <tr><td><code>--check</code></td><td>—</td><td>（仅 scan）有残留或异常时退出码 <code>1</code></td></tr>
         </tbody>
       </table>
@@ -530,7 +600,7 @@ python scripts/wb_scan.py">复制</button>
       <pre><span class="g">python</span> scripts/wb_selftest.py
 
 <span class="c"># 预期输出</span>
-<span class="g">通过 23 项，失败 0 项</span></pre>
+<span class="g">通过 54 项，失败 0 项</span></pre>
     </div>
 
     <table class="tbl rv">
@@ -566,11 +636,12 @@ python scripts/wb_scan.py">复制</button>
       <div class="rule rv"><span class="k">3</span><p><b>不碰 <code>blobs/</code></b> —— 那是内容寻址存储，存活任务也在引用，删了会破坏数据。</p></div>
       <div class="rule rv"><span class="k">4</span><p><b>不删任何被自动化任务引用的工作目录</b> —— 删掉等于悄悄打断用户的定时任务。</p></div>
       <div class="rule rv"><span class="k">5</span><p><b>不把含 <code>.workbuddy/memory/</code> 的工作区当空壳</b> —— 那是项目长期记忆。</p></div>
-      <div class="rule rv"><span class="k">6</span><p><b>B2 必须逐个列文件 + 二次确认</b> —— 那是你的成果或记忆，不是缓存。</p></div>
-      <div class="rule rv"><span class="k">7</span><p><b>默认走回收站</b>；要永久删除才加 <code>--no-trash</code>，且先加粗警告、列出受影响路径。</p></div>
-      <div class="rule rv"><span class="k">8</span><p><b>删完必须二次核验</b>，并报告「存活会话工作区缺失 = 0」。</p></div>
-      <div class="rule rv"><span class="k">9</span><p><b>保留当天的日志</b> <code>logs/&lt;今天&gt;/</code> 与 <code>logs/sandbox/&lt;今天&gt;/</code>。</p></div>
-      <div class="rule rv"><span class="k">10</span><p><b>改动脚本后先跑 <code>wb_selftest.py</code></b>，23 项全绿再交付。</p></div>
+      <div class="rule rv"><span class="k">6</span><p><b>不把非标准命名的目录当空壳</b> —— 即使完全为空，也一律归 B2 待确认。</p></div>
+      <div class="rule rv"><span class="k">7</span><p><b>B2 必须逐个列文件 + 关联线索 + 二次确认</b> —— 那是你的成果、记忆或自建目录。</p></div>
+      <div class="rule rv"><span class="k">8</span><p><b>默认走回收站或隔离区</b>；要永久删除才加 <code>--no-trash</code>，且先加粗警告、列出受影响路径。</p></div>
+      <div class="rule rv"><span class="k">9</span><p><b>删完必须二次核验</b>，并报告「存活会话工作区缺失 = 0」。</p></div>
+      <div class="rule rv"><span class="k">10</span><p><b>保留当天的日志</b> <code>logs/&lt;今天&gt;/</code> 与 <code>logs/sandbox/&lt;今天&gt;/</code>。</p></div>
+      <div class="rule rv"><span class="k">11</span><p><b>改动脚本后先跑 <code>wb_selftest.py</code></b>，54 项全绿再交付。</p></div>
     </div>
   </section>
 
@@ -594,7 +665,10 @@ python scripts/wb_scan.py">复制</button>
     </div></details>
 
     <details class="faq rv"><summary>删了还能恢复吗？</summary><div class="ans">
-      <p><b>默认可以。</b>执行时脚本走系统回收站（Windows 用 <code>SHFileOperationW</code>，macOS 用 <code>~/.Trash</code>，Linux 用 freedesktop 规范）。只有显式加 <code>--no-trash</code> 才是永久删除。</p>
+      <p><b>默认可以。</b>执行时有两条路：</p>
+      <p>· <b>系统回收站</b>（默认）—— Windows 用 <code>SHFileOperationW</code>，macOS 用 <code>~/.Trash</code>，Linux 用 freedesktop 规范。</p>
+      <p>· <b>自建隔离区</b>（推荐，加 <code>--quarantine</code>）—— 移入 <code>~/.workbuddy/.wb-quarantine</code> 并记录<b>原始路径</b>，之后用 <code>wb_restore.py list / restore</code> 精确还原，不用去回收站里翻。</p>
+      <p>只有显式加 <code>--no-trash</code> 才是永久删除 —— 那种情况下请务必看清文件清单。</p>
     </div></details>
 
     <details class="faq rv"><summary>我删掉的对话里的文件，还能找回来吗？</summary><div class="ans">
@@ -633,7 +707,7 @@ python scripts/wb_scan.py">复制</button>
       实测参考（2026-10-11，80 个已删会话 / 412 个会话总数）：A ≈ 128 MB · B1 16 KB · B2 146.5 MB · C ≈ 2.75 GB
     </p>
     <p style="margin:8px 0 0;font-size:13px">
-      当前版本 <b style="color:var(--ac)">v1.1.0</b> —— 新增三重保护 · 默认移入回收站 · 23 项自检
+      当前版本 <b style="color:var(--ac)">v1.2.0</b> —— 四重保护 · 工作区关联线索 · 隔离区可还原 · 54 项自检
     </p>
     <p style="margin:16px 0 0;font-size:13px;color:var(--dim)">
       ⚠️ 本工具会删除磁盘文件。虽然设计了「默认预览 + 回收站 + 分级确认 + 事后校验」四道保险，仍请在看到文件清单并自行判断后再确认执行。

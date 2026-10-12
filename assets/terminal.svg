@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 716" width="100%" role="img" aria-label="终端演示：wb_scan.py 只读盘点输出示例（v1.1）">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 744" width="100%" role="img" aria-label="终端演示：wb_scan.py 只读盘点输出示例（v1.2）">
   <title>终端演示 · v1.1</title>
   <defs>
     <linearGradient id="winbg" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -7,8 +7,8 @@
     </linearGradient>
   </defs>
 
-  <rect width="1280" height="716" rx="14" fill="url(#winbg)"/>
-  <rect x="0.5" y="0.5" width="1279" height="715" rx="14" fill="none" stroke="#ffffff" stroke-opacity="0.10"/>
+  <rect width="1280" height="744" rx="14" fill="url(#winbg)"/>
+  <rect x="0.5" y="0.5" width="1279" height="743" rx="14" fill="none" stroke="#ffffff" stroke-opacity="0.10"/>
 
   <!-- title bar -->
   <rect x="0" y="0" width="1280" height="46" rx="14" fill="#ffffff" opacity="0.045"/>
@@ -100,32 +100,34 @@
     <text x="430" y="480" fill="#93a8c9" text-anchor="end">[62.7MB]</text>
     <text x="470" y="480" fill="#fda4af">用户文件+记忆</text>
 
-    <text x="112" y="504" fill="#7b8dad">58.1MB</text>
-    <text x="212" y="504" fill="#c3d2e8">光缆台账（延庆段）.xlsx</text>
+    <text x="76"  y="504" fill="#5eead4">曾关联 16 个已删会话：出装查询 / 提莫 / 不需要单件装备的胜率</text>
 
-    <text x="112" y="528" fill="#c084fc">[记忆]</text>
-    <text x="212" y="528" fill="#c3d2e8">.workbuddy/memory/2026-09-14.md</text>
+    <text x="112" y="528" fill="#7b8dad">58.1MB</text>
+    <text x="212" y="528" fill="#c3d2e8">光缆台账（延庆段）.xlsx</text>
+
+    <text x="112" y="552" fill="#c084fc">[记忆]</text>
+    <text x="212" y="552" fill="#c3d2e8">.workbuddy/memory/2026-09-14.md</text>
 
     <!-- 19-20. protected -->
-    <text x="34"  y="560" fill="#4ade80" font-weight="700">[受保护] 绝不删除的孤儿工作区</text>
-    <text x="320" y="560" fill="#86efac">3 个</text>
+    <text x="34"  y="584" fill="#4ade80" font-weight="700">[受保护] 绝不删除的孤儿工作区</text>
+    <text x="320" y="584" fill="#86efac">3 个</text>
 
-    <text x="76"  y="584" fill="#c3d2e8">2026-10-03-18-10-05</text>
-    <text x="430" y="584" fill="#4ade80">[被自动化任务引用：每日台账汇总]</text>
+    <text x="76"  y="608" fill="#c3d2e8">2026-10-03-18-10-05</text>
+    <text x="430" y="608" fill="#4ade80">[被自动化任务引用：每日台账汇总]</text>
 
     <!-- 21. tier C -->
-    <text x="34"  y="616" fill="#fbbf24" font-weight="700">[C] 诊断日志 / 追踪</text>
-    <text x="580" y="616" fill="#ffe9bd" text-anchor="end">合计 2.75GB</text>
+    <text x="34"  y="640" fill="#fbbf24" font-weight="700">[C] 诊断日志 / 追踪</text>
+    <text x="580" y="640" fill="#ffe9bd" text-anchor="end">合计 2.75GB</text>
 
-    <text x="76"  y="640" fill="#c3d2e8">traces/</text>
-    <text x="260" y="640" fill="#8fa6c9">14 项</text>
-    <text x="580" y="640" fill="#c3d2e8" text-anchor="end">1.92GB</text>
+    <text x="76"  y="664" fill="#c3d2e8">traces/</text>
+    <text x="260" y="664" fill="#8fa6c9">14 项</text>
+    <text x="580" y="664" fill="#c3d2e8" text-anchor="end">1.92GB</text>
 
-    <text x="76"  y="664" fill="#c3d2e8">logs/sandbox/</text>
-    <text x="260" y="664" fill="#8fa6c9">12 天</text>
-    <text x="580" y="664" fill="#c3d2e8" text-anchor="end">634.0MB</text>
+    <text x="76"  y="688" fill="#c3d2e8">logs/sandbox/</text>
+    <text x="260" y="688" fill="#8fa6c9">12 天</text>
+    <text x="580" y="688" fill="#c3d2e8" text-anchor="end">634.0MB</text>
 
     <!-- 24. verify -->
-    <text x="34"  y="694" fill="#4ade80" font-weight="700">[OK] 存活会话 332 个，工作区缺失 0 个</text>
+    <text x="34"  y="720" fill="#4ade80" font-weight="700">[OK] 存活会话 332 个，工作区缺失 0 个</text>
   </g>
 </svg>

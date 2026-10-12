@@ -8,7 +8,7 @@
 &nbsp;<img src="./assets/badge-python.svg" alt="python: 3.8+ · no deps" />
 &nbsp;<img src="./assets/badge-platform.svg" alt="platform: Windows · macOS · Linux" />
 &nbsp;<img src="./assets/badge-safety.svg" alt="safety: read-only first" />
-&nbsp;<img src="./assets/badge-version.svg" alt="version: v1.1.0" />
+&nbsp;<img src="./assets/badge-version.svg" alt="version: v1.2.0" />
 
 <br />
 <br />
@@ -20,7 +20,7 @@
 
 <br />
 
-[**快速开始**](#-快速开始) &nbsp;·&nbsp; [**三重保护**](#-三重保护) &nbsp;·&nbsp; [**分级说明**](#-四级分级) &nbsp;·&nbsp; [**常见问题**](#-常见问题-faq) &nbsp;·&nbsp; [**下载 ↓**](https://github.com/Lemon177777/workbuddy-task-cleanup/releases/latest)
+[**快速开始**](#-快速开始) &nbsp;·&nbsp; [**四重保护**](#-四重保护) &nbsp;·&nbsp; [**分级说明**](#-四级分级) &nbsp;·&nbsp; [**常见问题**](#-常见问题-faq) &nbsp;·&nbsp; [**下载 ↓**](https://github.com/Lemon177777/workbuddy-task-cleanup/releases/latest)
 
 </div>
 
@@ -43,19 +43,18 @@ WorkBuddy 用久了，你大概率遇到过下面这些事：
 
 ---
 
-## 🛡️ 三重保护
+## 🛡️ 四重保护
 
-> **这是 v1.1 最重要的改动** —— 补上了 v1.0 的两个盲区。删文件这件事，宁可少删，不可错删。
+> 删文件这件事，**宁可少删，不可错删**。所以清理前会先建保护集合 —— 任一命中，绝不删除。
 
-<img src="./assets/protection.svg" alt="三重保护：存活会话工作区、自动化任务工作目录、工作区记忆" width="100%" />
-
-清理前会先建三个保护集合，**任一命中，绝不删除**：
+<img src="./assets/protection.svg" alt="四重保护：存活会话工作区、自动化任务工作目录、工作区记忆、非标准命名目录" width="100%" />
 
 | # | 保护对象 | 判定依据 | 为什么必须保护 |
 | :---: | :--- | :--- | :--- |
 | 1 | 存活会话的工作区 | `sessions.deleted_at IS NULL` 的 `cwd` | 你正在用的对话，动它等于自毁 |
 | 2 | **自动化任务的工作目录** | `automations.cwds`（JSON 数组，过滤 `deleted_at IS NULL`） | ⚠️ **v1.0 盲区** —— 它不属于 `sessions` 表。一个工作区完全可能"没有任何存活会话引用"，却正是某个定时任务的运行目录。删掉 = **悄悄打断你的定时任务** |
 | 3 | **工作区记忆** | `<工作区>/.workbuddy/memory/` 下存在文件 | ⚠️ **v1.0 盲区** —— v1.0 把「只有 `.workbuddy` 的目录」当空壳直接删，若里面只存着记忆，就会**连项目长期记忆一起删掉** |
+| 4 | **非标准命名的目录** | 目录名不符合 `YYYY-MM-DD-HH-MM-SS` | ⚠️ **v1.2 新增** —— `~/WorkBuddy/` 下未必全是自动生成的工作区，可能是你手建的。**即使它完全为空，也不当空壳**，一律归入 B2 待确认 |
 
 被保护的工作区会出现在报告里，并**注明原因**（属于哪个存活会话 / 被哪个自动化任务引用）：
 
@@ -117,6 +116,65 @@ SELECT id, name, status, cwds, deleted_at FROM automations WHERE deleted_at IS N
 
 > 📌 **v1.1 修正**：B1 的判定从「只有 `.workbuddy`」收紧为「**既无用户文件、也无工作区记忆**」。
 > 含记忆的目录一律升级为 B2 —— 记忆优先，宁可留着。
+
+---
+
+## 🔎 工作区关联线索
+
+**B2 逐个确认时，最缺的是什么？——「这目录到底是干什么用的」。**
+
+只给一个时间戳目录名 + 一堆文件名，你根本想不起来它是哪个项目。所以 v1.2 让扫描顺手把线索查出来：
+
+```text
+### 2026-10-12-20-17-57   [62.7MB]  用户文件+工作区记忆x1
+    曾关联 16 个已删会话：出装查询 / 提莫 / 不需要单件装备的胜率
+    曾被 2 条自动化引用：海斗卡片每日更新（已删） / 数据包探测（已删）
+       58.1MB  光缆台账（延庆段）.xlsx
+       4.2MB   现场照片_测试桩/
+```
+
+原理是两张**反向索引**：`cwd → 会话` 与 `cwd → 自动化任务`。
+
+> 📌 线索里**包含已删除的会话与自动化** —— 那是刻意的，因为"曾经属于谁"恰恰是辨认工作区最有用的信息。
+> 但它们**不参与保护集合**（保护只看 `deleted_at IS NULL`），否则会把早已删掉的旧任务当成"还在用"，造成误报。
+
+只想查一个目录？不用跑全量扫描：
+
+```bash
+python scripts/wb_scan.py --inspect ~/WorkBuddy/2026-09-14-22-35-03
+```
+
+输出会告诉你：目录是否存在、体积、记忆文件、关联了哪些会话与自动化、受不受保护、属于哪个分级。
+
+---
+
+## 🗄️ 隔离区与还原
+
+**默认删除可反悔，但"怎么捞回来"必须有个明确答案。**
+
+系统回收站在 Windows 上难以按路径精确还原（Shell API 只能枚举）。所以 v1.2 提供了一个自建隔离区：
+
+```text
+<隔离区>/
+├── manifest.json       # 每条记录：id / 原始路径 / 体积 / 类别 / 删除时间
+└── items/<id>/         # 实际内容（保留原有结构）
+```
+
+```bash
+# 清理时移入隔离区（而不是直接删）
+python scripts/wb_clean.py --tiers A,B1,C --apply --quarantine
+
+# 查看 / 还原 / 到期清除
+python scripts/wb_restore.py list
+python scripts/wb_restore.py restore --all
+python scripts/wb_restore.py restore --id 20261012-231500-2026-09-14-22-35-03
+python scripts/wb_restore.py purge --older-than 30
+```
+
+因为每次都记了**原始路径**，还原是精确的，不需要你自己去翻回收站找。
+`purge` 是唯一不可逆的操作，会先展示清单再要求确认。
+
+> 💡 隔离区放在 `~/.workbuddy/.wb-quarantine`，本身就是可以直接删的普通目录 —— 不存在"清理工具的垃圾谁来清理"的问题。
 
 ---
 
@@ -227,14 +285,18 @@ python scripts/wb_scan.py --check
 | :--- | :--- | :--- |
 | `--tiers A,B1,C` | *（必填）* | 要处理的类别，逗号分隔：`A` `B1` `B2` `C` |
 | `--apply` | 关闭 | 真正执行。**不加时只预览，不落盘** |
-| `--to-trash` / `--no-trash` | `--to-trash` | 移入回收站（**默认**）/ 永久删除 |
-| `--include-b2` | 关闭 | 清理 B2 的必要开关（含用户文件或记忆） |
+| `--to-trash` / `--no-trash` | `--to-trash` | 移入系统回收站（**默认**）/ 永久删除 |
+| `--quarantine [DIR]` | 关闭 | 移入**自建隔离区**（默认 `~/.workbuddy/.wb-quarantine`），可用 `wb_restore.py` 精确还原 |
+| `--include-b2` | 关闭 | 清理 B2 的必要开关（含用户文件、记忆，或非标准命名） |
 | `--keep-b2 NAMES` | — | B2 中要**保留**的目录名，逗号分隔 |
+| `--match KEYWORD` | — | 只处理关联到该关键词的工作区（目录名 / 会话标题 / 自动化名） |
 | `--older-than DAYS` | — | 只清理修改时间早于 N 天的项 |
+| `--fast` | 关闭 | 跳过体积统计，只数数量 |
 | `--log FILE` | — | 把删除清单写入 JSON 留痕 |
 | `--workbuddy` | `~/.workbuddy` | WorkBuddy 数据目录 |
 | `--workspaces` | `~/WorkBuddy` | 工作区根目录 |
 | `--json OUT` | — | （仅 scan）额外导出一份 JSON 报告 |
+| `--inspect PATH` | — | （仅 scan）体检单个目录：这是谁的、能不能清 |
 | `--check` | — | （仅 scan）有残留或异常时退出码 `1` |
 
 </details>
@@ -256,7 +318,7 @@ python scripts/wb_selftest.py
 预期输出：
 
 ```text
-通过 23 项，失败 0 项
+通过 54 项，失败 0 项
 ```
 
 它重点验证的几条，恰好就是历史上踩过的坑：
@@ -294,11 +356,12 @@ python scripts/wb_selftest.py
 | 3 | **不碰 `blobs/`** —— 那是内容寻址存储，存活任务也在引用，删了会破坏数据 |
 | 4 | **不删任何被自动化任务引用的工作目录** —— 删掉等于悄悄打断用户的定时任务 |
 | 5 | **不把含 `.workbuddy/memory/` 的工作区当空壳** —— 那是项目长期记忆 |
-| 6 | **B2 必须逐个列文件 + 二次确认** —— 那是你的成果或记忆，不是缓存 |
-| 7 | **默认走回收站**；要永久删除才加 `--no-trash`，且先加粗警告、列出受影响路径 |
-| 8 | **删完必须二次核验**，并报告「存活会话工作区缺失 = 0」 |
-| 9 | 保留当天的 `logs/<今天>/` 与 `logs/sandbox/<今天>/` |
-| 10 | **改动脚本后先跑 `wb_selftest.py`**，23 项全绿再交付 |
+| 6 | **不把非标准命名的目录当空壳** —— 即使它完全为空，也一律归 B2 待确认 |
+| 7 | **B2 必须逐个列文件 + 关联线索 + 二次确认** —— 那是你的成果、记忆或自建目录 |
+| 8 | **默认走回收站或隔离区**；要永久删除才加 `--no-trash`，且先加粗警告、列出受影响路径 |
+| 9 | **删完必须二次核验**，并报告「存活会话工作区缺失 = 0」 |
+| 10 | 保留当天的 `logs/<今天>/` 与 `logs/sandbox/<今天>/` |
+| 11 | **改动脚本后先跑 `wb_selftest.py`**，54 项全绿再交付 |
 
 ---
 
@@ -357,8 +420,13 @@ v1.0 会把它判成空壳并删除；v1.1 改为：**含记忆即升级为 B2**
 <details>
 <summary><b>删了还能恢复吗？</b></summary>
 
-**默认可以。** 执行时脚本走系统回收站（Windows 用 `SHFileOperationW`，macOS 用 `~/.Trash`，Linux 用 freedesktop 规范）。
-只有你显式加 `--no-trash` 才是永久删除 —— 那种情况下请务必看清文件清单。
+**默认可以。** 执行时有两条路：
+
+- **系统回收站**（默认）—— Windows 用 `SHFileOperationW`，macOS 用 `~/.Trash`，Linux 用 freedesktop 规范。
+- **自建隔离区**（推荐，加 `--quarantine`）—— 移入 `~/.workbuddy/.wb-quarantine`，并记录**原始路径**，
+  之后用 `wb_restore.py list / restore` 精确还原，不用去回收站里翻。
+
+只有显式加 `--no-trash` 才是永久删除 —— 那种情况下请务必看清文件清单。
 
 </details>
 
@@ -421,10 +489,11 @@ v1.0 会把它判成空壳并删除；v1.1 改为：**含记忆即升级为 B2**
 workbuddy-task-cleanup/
 ├── SKILL.md                        # Skill 说明书（WorkBuddy 读取的入口）
 ├── scripts/
-│   ├── wb_common.py                # 公共逻辑：DB 读取 / 保护集合 / 回收站 / 清理器
-│   ├── wb_scan.py                  # ① 只读盘点（绝不修改文件）
-│   ├── wb_clean.py                 # ② 分级清理（默认 dry-run + 回收站）
-│   └── wb_selftest.py              # ③ 自检（临时目录造数据，23 项断言）
+│   ├── wb_common.py                # 公共逻辑：DB 读取 / 保护集合 / 关联线索 / 隔离区 / 清理器
+│   ├── wb_scan.py                  # ① 只读盘点（--fast / --match / --inspect）
+│   ├── wb_clean.py                 # ② 分级清理（默认 dry-run；回收站或隔离区）
+│   ├── wb_restore.py               # ③ 隔离区管理（list / restore / purge）
+│   └── wb_selftest.py              # ④ 自检（临时目录造数据，54 项断言）
 ├── references/
 │   └── orphan-map.md               # 数据目录地图 · 两张权威表 · 已知坑 · 参考体量
 ├── assets/                         # 图示与徽章（矢量 SVG）
@@ -468,12 +537,24 @@ workbuddy-task-cleanup/
 
 ## 📝 更新日志
 
-见 [CHANGELOG.md](./CHANGELOG.md)。当前版本 **v1.1.0**：
+见 [CHANGELOG.md](./CHANGELOG.md)。当前版本 **v1.2.0**：
 
-- 🛡️ 新增**三重保护**：自动化任务工作目录、工作区记忆
-- 🗑️ 默认**移入回收站**，永久删除需显式 `--no-trash`
-- 🧪 新增 `wb_selftest.py` 自检（23 项断言）
-- 🧰 抽出 `wb_common.py` 公共模块；新增 `--keep-b2` / `--older-than` / `--log` / `--check`
+- 🔎 **工作区关联线索** —— B2 报告列出「曾关联哪些已删会话 / 自动化」，一眼认出这是什么项目
+- 🗄️ **隔离区与还原** —— `--quarantine` 移入自建隔离区，`wb_restore.py` 精确还原
+- ⚡ **扫描提速** —— 体积计算改线程池并行；`--fast` 可跳过体积只数数量
+- 🎯 **精确打击** —— `--match 关键词` 按目录名/会话标题/自动化名筛选
+- 🩺 **单目录体检** —— `--inspect <目录>` 回答「这是谁的、能不能清」
+- 🚫 **非标准命名目录不再当空壳** —— 一律归 B2 待确认
+- 🧪 自检从 23 项扩到 **54 项**，覆盖上述每一条
+
+<details>
+<summary>更早的版本</summary>
+
+- **v1.1.0** —— 🛡️ 三重保护（自动化任务工作目录、工作区记忆）；默认移入回收站；抽出 `wb_common.py`
+- **v1.0.1** —— 二次核验流程；`logs/sandbox` 按日期子目录删
+- **v1.0.0** —— 首个版本，四级分级
+
+</details>
 
 ---
 
