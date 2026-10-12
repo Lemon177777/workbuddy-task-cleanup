@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 500" width="100%" role="img" aria-label="判定依据与永久豁免名单">
+  <title>判定依据与安全边界</title>
+  <defs>
+    <linearGradient id="sbg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0b1222"/>
+      <stop offset="100%" stop-color="#090e1b"/>
+    </linearGradient>
+    <radialGradient id="sglowL" cx="30%" cy="45%" r="45%">
+      <stop offset="0%" stop-color="#22c55e" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#22c55e" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="sglowR" cx="70%" cy="45%" r="45%">
+      <stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.24"/>
+      <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1280" height="500" fill="url(#sbg)"/>
+  <rect width="1280" height="500" fill="url(#sglowL)"/>
+  <rect width="1280" height="500" fill="url(#sglowR)"/>
+
+  <g font-family="ui-sans-serif,-apple-system,'Segoe UI','Microsoft YaHei','PingFang SC',sans-serif">
+
+    <!-- source -->
+    <rect x="500" y="36" width="280" height="62" rx="14" fill="#ffffff" opacity="0.06"/>
+    <rect x="500.5" y="36.5" width="279" height="61" rx="13.5" fill="none" stroke="#93c5fd" stroke-opacity="0.38"/>
+    <text x="640" y="64" text-anchor="middle" font-size="17.5" font-weight="600" fill="#ffffff">workbuddy.db · sessions 表</text>
+    <text x="640" y="86" text-anchor="middle" font-size="14.5" fill="#8fa6c9">唯一权威判定依据（只读打开）</text>
+
+    <!-- branches -->
+    <path d="M640 98 C640 142 390 140 390 182" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-opacity="0.75"/>
+    <path d="M640 98 C640 142 890 140 890 182" fill="none" stroke="#c4b5fd" stroke-width="2.5" stroke-opacity="0.75"/>
+
+    <!-- LEFT: live -->
+    <rect x="180" y="184" width="420" height="176" rx="18" fill="#22c55e" opacity="0.075"/>
+    <rect x="180.5" y="184.5" width="419" height="175" rx="17.5" fill="none" stroke="#4ade80" stroke-opacity="0.40"/>
+    <circle cx="232" cy="236" r="24" fill="#22c55e" opacity="0.20"/>
+    <path d="M232 222 l14 6 v10 c0 9 -6 15 -14 18 c-8 -3 -14 -9 -14 -18 v-10 z" fill="none" stroke="#4ade80" stroke-width="2.4" stroke-linejoin="round"/>
+    <text x="272" y="232" font-size="20" font-weight="700" fill="#86efac">deleted_at IS NULL</text>
+    <text x="272" y="256" font-size="16.5" fill="#cfe6d6">→ 存活会话</text>
+    <text x="206" y="302" font-size="17.5" fill="#ffffff" font-weight="600">一律不动</text>
+    <text x="206" y="328" font-size="16" fill="#93a8c9">自动排除当前会话自身的工作区，</text>
+    <text x="206" y="348" font-size="16" fill="#93a8c9">清理后还会校验其完整性 = 0 缺失</text>
+
+    <!-- RIGHT: deleted -->
+    <rect x="680" y="184" width="420" height="176" rx="18" fill="#8b5cf6" opacity="0.085"/>
+    <rect x="680.5" y="184.5" width="419" height="175" rx="17.5" fill="none" stroke="#c4b5fd" stroke-opacity="0.40"/>
+    <circle cx="732" cy="236" r="24" fill="#8b5cf6" opacity="0.22"/>
+    <path d="M722 228 h20 M726 228 v-5 h12 v5 M725 228 l2 20 h16 l2 -20" fill="none" stroke="#c4b5fd" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+    <text x="772" y="232" font-size="20" font-weight="700" fill="#d8ccff">deleted_at 有值</text>
+    <text x="772" y="256" font-size="16.5" fill="#d6cdf0">→ 已删除任务</text>
+    <text x="706" y="302" font-size="17.5" fill="#ffffff" font-weight="600">进入分级清理</text>
+    <text x="706" y="328" font-size="16" fill="#93a8c9">磁盘残留按 A / B1 / B2 / C 盘点，</text>
+    <text x="706" y="348" font-size="16" fill="#93a8c9">B2 逐个列文件 + 二次确认才允许删</text>
+
+    <!-- exemptions -->
+    <text x="180" y="412" font-size="16.5" font-weight="600" fill="#ffffff">永久豁免名单（无条件跳过）</text>
+
+    <g font-size="14.5">
+      <rect x="180" y="428" width="152" height="36" rx="18" fill="#f43f5e" opacity="0.14"/>
+      <rect x="180.5" y="428.5" width="151" height="35" rx="17.5" fill="none" stroke="#fb7185" stroke-opacity="0.35"/>
+      <text x="256" y="451" text-anchor="middle" fill="#fda4af">blobs/ 内容寻址存储</text>
+
+      <rect x="340" y="428" width="130" height="36" rx="18" fill="#f43f5e" opacity="0.14"/>
+      <rect x="340.5" y="428.5" width="129" height="35" rx="17.5" fill="none" stroke="#fb7185" stroke-opacity="0.35"/>
+      <text x="405" y="451" text-anchor="middle" fill="#fda4af">workbuddy.db</text>
+
+      <rect x="478" y="428" width="136" height="36" rx="18" fill="#f43f5e" opacity="0.14"/>
+      <rect x="478.5" y="428.5" width="135" height="35" rx="17.5" fill="none" stroke="#fb7185" stroke-opacity="0.35"/>
+      <text x="546" y="451" text-anchor="middle" fill="#fda4af">settings.json</text>
+
+      <rect x="622" y="428" width="112" height="36" rx="18" fill="#f43f5e" opacity="0.14"/>
+      <rect x="622.5" y="428.5" width="111" height="35" rx="17.5" fill="none" stroke="#fb7185" stroke-opacity="0.35"/>
+      <text x="678" y="451" text-anchor="middle" fill="#fda4af">mcp.json</text>
+
+      <rect x="742" y="428" width="176" height="36" rx="18" fill="#f43f5e" opacity="0.14"/>
+      <rect x="742.5" y="428.5" width="175" height="35" rx="17.5" fill="none" stroke="#fb7185" stroke-opacity="0.35"/>
+      <text x="830" y="451" text-anchor="middle" fill="#fda4af">sessions/*.json</text>
+
+      <rect x="926" y="428" width="170" height="36" rx="18" fill="#f43f5e" opacity="0.14"/>
+      <rect x="926.5" y="428.5" width="169" height="35" rx="17.5" fill="none" stroke="#fb7185" stroke-opacity="0.35"/>
+      <text x="1011" y="451" text-anchor="middle" fill="#fda4af">存活工作区 · 当天日志</text>
+    </g>
+  </g>
+</svg>

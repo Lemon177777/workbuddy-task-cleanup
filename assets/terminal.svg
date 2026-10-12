@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="100%" role="img" aria-label="终端演示：wb_scan.py 只读盘点输出示例">
+  <title>终端演示</title>
+  <defs>
+    <linearGradient id="winbg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#131c30"/>
+      <stop offset="100%" stop-color="#0b1220"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1280" height="640" rx="14" fill="url(#winbg)"/>
+  <rect x="0.5" y="0.5" width="1279" height="639" rx="14" fill="none" stroke="#ffffff" stroke-opacity="0.10"/>
+
+  <!-- title bar -->
+  <rect x="0" y="0" width="1280" height="46" rx="14" fill="#ffffff" opacity="0.045"/>
+  <rect x="0" y="32" width="1280" height="14" fill="#ffffff" opacity="0.045"/>
+  <circle cx="30" cy="23" r="7" fill="#ff5f57"/>
+  <circle cx="54" cy="23" r="7" fill="#febc2e"/>
+  <circle cx="78" cy="23" r="7" fill="#28c840"/>
+  <text x="640" y="29" text-anchor="middle" font-size="14" fill="#9db0cf"
+        font-family="ui-sans-serif,-apple-system,'Segoe UI','Microsoft YaHei',sans-serif">
+    Terminal — wb_scan.py（只读，不修改任何文件）
+  </text>
+
+  <g font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size="15">
+
+    <!-- 1. command -->
+    <text x="34" y="82" fill="#4ade80">$</text>
+    <text x="52" y="82" fill="#e6edf7">python scripts/wb_scan.py --json ~/wb_cleanup_report.json</text>
+    <rect x="562" y="71" width="9" height="15" fill="#e6edf7" opacity="0.55"/>
+
+    <!-- 2. rule -->
+    <text x="34" y="116" fill="#4a5c78">====================================================================================================</text>
+
+    <!-- 3. header -->
+    <text x="34" y="142" fill="#e6edf7">WorkBuddy 已删任务残留盘点</text>
+    <text x="382" y="142" fill="#8fa6c9">root=/home/me/.workbuddy</text>
+
+    <!-- 4. counts -->
+    <text x="34" y="166" fill="#c3d2e8">会话总数</text>
+    <text x="118" y="166" fill="#ffffff" font-weight="700">412</text>
+    <text x="152" y="166" fill="#4a5c78">|</text>
+    <text x="174" y="166" fill="#c3d2e8">已删除</text>
+    <text x="246" y="166" fill="#fb7185" font-weight="700">80</text>
+    <text x="280" y="166" fill="#4a5c78">|</text>
+    <text x="302" y="166" fill="#c3d2e8">存活</text>
+    <text x="356" y="166" fill="#4ade80" font-weight="700">332</text>
+
+    <!-- 5. rule -->
+    <text x="34" y="190" fill="#4a5c78">====================================================================================================</text>
+
+    <!-- 6. tier A -->
+    <text x="34" y="224" fill="#93c5fd" font-weight="700">[A] 按已删会话 id 命名的缓存（纯内部数据，可直接清理）</text>
+
+    <!-- 7-11. rows -->
+    <text x="76"  y="248" fill="#c3d2e8">tasks</text>
+    <text x="260" y="248" fill="#5d7395">孤儿</text>
+    <text x="430" y="248" fill="#c3d2e8" text-anchor="end">18 个</text>
+    <text x="580" y="248" fill="#c3d2e8" text-anchor="end">412.0KB</text>
+
+    <text x="76"  y="272" fill="#c3d2e8">artifact-index</text>
+    <text x="260" y="272" fill="#5d7395">孤儿</text>
+    <text x="430" y="272" fill="#c3d2e8" text-anchor="end">80 个</text>
+    <text x="580" y="272" fill="#c3d2e8" text-anchor="end">96.0KB</text>
+
+    <text x="76"  y="296" fill="#c3d2e8">changes-detail</text>
+    <text x="260" y="296" fill="#5d7395">孤儿</text>
+    <text x="430" y="296" fill="#c3d2e8" text-anchor="end">61 个</text>
+    <text x="580" y="296" fill="#c3d2e8" text-anchor="end">84.2MB</text>
+
+    <text x="76"  y="320" fill="#c3d2e8">file-history</text>
+    <text x="260" y="320" fill="#5d7395">孤儿</text>
+    <text x="430" y="320" fill="#c3d2e8" text-anchor="end">44 个</text>
+    <text x="580" y="320" fill="#c3d2e8" text-anchor="end">41.6MB</text>
+
+    <text x="76"  y="344" fill="#c3d2e8">projects</text>
+    <text x="260" y="344" fill="#5d7395">孤儿</text>
+    <text x="430" y="344" fill="#c3d2e8" text-anchor="end">77 个</text>
+    <text x="580" y="344" fill="#c3d2e8" text-anchor="end">2.1MB</text>
+
+    <text x="76"  y="368" fill="#8fa6c9">小计</text>
+    <text x="580" y="368" fill="#8fa6c9" text-anchor="end">128.4MB</text>
+
+    <!-- 13. tier B1 -->
+    <text x="34"  y="400" fill="#5eead4" font-weight="700">[B1] 空壳孤儿工作区（只剩 .workbuddy）</text>
+    <text x="430" y="400" fill="#c3d2e8" text-anchor="end">36 个</text>
+    <text x="580" y="400" fill="#c3d2e8" text-anchor="end">16.0KB</text>
+
+    <!-- 14. tier B2 -->
+    <text x="34"  y="432" fill="#fb7185" font-weight="700">[B2] 含用户文件的孤儿工作区</text>
+    <text x="340" y="432" fill="#c3d2e8" text-anchor="end">18 个</text>
+    <text x="440" y="432" fill="#ffd9e0" text-anchor="end">146.5MB</text>
+    <text x="470" y="432" fill="#fb7185">⚠ 删前须逐个确认</text>
+
+    <!-- 15-17. B2 detail -->
+    <text x="76"  y="458" fill="#c3d2e8">### 2026-09-14-10-22-31</text>
+    <text x="430" y="458" fill="#93a8c9" text-anchor="end">[62.7MB]</text>
+
+    <text x="112" y="482" fill="#7b8dad">58.1MB</text>
+    <text x="212" y="482" fill="#c3d2e8">光缆台账（延庆段）.xlsx</text>
+
+    <text x="112" y="506" fill="#7b8dad">4.2MB</text>
+    <text x="212" y="506" fill="#c3d2e8">现场照片_测试桩/</text>
+
+    <!-- 18. tier C -->
+    <text x="34"  y="538" fill="#fbbf24" font-weight="700">[C] 诊断日志 / 追踪</text>
+    <text x="430" y="538" fill="#ffe9bd" text-anchor="end">合计 2.75GB</text>
+
+    <text x="76"  y="562" fill="#c3d2e8">traces/</text>
+    <text x="260" y="562" fill="#8fa6c9">14 项</text>
+    <text x="580" y="562" fill="#c3d2e8" text-anchor="end">1.92GB</text>
+
+    <text x="76"  y="586" fill="#c3d2e8">logs/sandbox/</text>
+    <text x="260" y="586" fill="#8fa6c9">12 天</text>
+    <text x="580" y="586" fill="#c3d2e8" text-anchor="end">634.0MB</text>
+
+    <!-- 21. verify -->
+    <text x="34" y="616" fill="#4ade80" font-weight="700">[✓] 存活会话 332 个，工作区缺失 0 个</text>
+  </g>
+</svg>

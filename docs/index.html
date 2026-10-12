@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>WorkBuddy 任务垃圾清理 · 删掉的对话别再占着硬盘</title>
+<meta name="description" content="清理 WorkBuddy 中已删除任务遗留的孤儿文件。依据 workbuddy.db 的 deleted_at 字段精确定位，分四级盘点，先只读扫描、用户确认后再清理。" />
+<meta name="theme-color" content="#080d19" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%B9%3C/text%3E%3C/svg%3E" />
+<meta property="og:title" content="WorkBuddy 任务垃圾清理" />
+<meta property="og:description" content="把 WorkBuddy 里「已删除任务」遗留的孤儿文件找出来 —— 先只读扫描、列清楚清单，等你点头，才动手删。" />
+<meta property="og:image" content="assets/banner.svg" />
+<style>
+  :root{
+    --bg:#080d19; --bg2:#0c1424; --bg3:#101a2e;
+    --card:rgba(255,255,255,.045); --card-hi:rgba(255,255,255,.075);
+    --bd:rgba(255,255,255,.10); --bd-hi:rgba(255,255,255,.18);
+    --tx:#e6edf7; --mu:#93a8c9; --dim:#6b7c9b;
+    --ac:#60a5fa; --ac2:#a78bfa; --gr:#4ade80; --rd:#fb7185; --am:#fbbf24;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"DejaVu Sans Mono",monospace;
+    --sans:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    --maxw:1120px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:84px}
+  body{
+    margin:0;background:var(--bg);color:var(--tx);font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;line-height:1.7;font-size:16px;overflow-x:hidden;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:
+      radial-gradient(60% 45% at 82% 6%,rgba(59,130,246,.22),transparent 70%),
+      radial-gradient(50% 40% at 6% 34%,rgba(168,85,247,.16),transparent 70%),
+      radial-gradient(55% 45% at 50% 100%,rgba(59,130,246,.10),transparent 70%);
+  }
+  .wrap{position:relative;z-index:1;max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  /* ---------- nav ---------- */
+  nav{
+    position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);
+    background:rgba(8,13,25,.78);border-bottom:1px solid var(--bd);
+  }
+  .nav-in{max-width:var(--maxw);margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:20px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;letter-spacing:.2px;white-space:nowrap}
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--gr);box-shadow:0 0 12px var(--gr)}
+  .nav-links{display:flex;gap:22px;margin-left:auto;font-size:14px}
+  .nav-links a{color:var(--mu);text-decoration:none;transition:color .18s}
+  .nav-links a:hover{color:var(--tx)}
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;padding:9px 18px;border-radius:999px;
+    font-size:14px;font-weight:600;text-decoration:none;border:1px solid transparent;
+    transition:transform .16s,box-shadow .16s,background .16s,border-color .16s;cursor:pointer;white-space:nowrap;
+  }
+  .btn-p{background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;box-shadow:0 6px 22px rgba(59,130,246,.34)}
+  .btn-p:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(99,102,241,.48)}
+  .btn-g{background:var(--card);color:var(--tx);border-color:var(--bd-hi)}
+  .btn-g:hover{background:var(--card-hi);transform:translateY(-2px)}
+  .nav-cta{margin-left:8px}
+  @media(max-width:860px){.nav-links{display:none}}
+
+  /* ---------- hero ---------- */
+  header{padding:52px 0 8px;text-align:center}
+  .hero-img{
+    width:100%;border-radius:18px;display:block;border:1px solid var(--bd);
+    box-shadow:0 26px 70px rgba(0,0,0,.55);
+  }
+  .badges{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:26px 0 0}
+  .badges img{height:20px;display:block}
+  .hero-cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:30px 0 0}
+  .hero-cta .btn{padding:12px 26px;font-size:15px}
+
+  .stats{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:52px 0 0;
+  }
+  .stat{
+    background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:20px 16px;text-align:center;
+  }
+  .stat b{display:block;font-size:26px;font-weight:700;letter-spacing:-.5px;
+    background:linear-gradient(135deg,#93c5fd,#c4b5fd);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .stat span{display:block;font-size:13px;color:var(--mu);margin-top:4px}
+  @media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}}
+
+  /* ---------- section ---------- */
+  section{padding:74px 0 0}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;letter-spacing:1.4px;
+    color:var(--ac);text-transform:uppercase;margin-bottom:14px;
+  }
+  .eyebrow::before{content:"";width:22px;height:2px;background:linear-gradient(90deg,var(--ac),var(--ac2));border-radius:2px}
+  h2{font-size:clamp(24px,3.4vw,34px);margin:0 0 14px;letter-spacing:-.4px;line-height:1.28}
+  .sub{color:var(--mu);font-size:16.5px;margin:0 0 32px;max-width:760px}
+
+  .grid{display:grid;gap:16px}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:900px){.g3,.g2{grid-template-columns:1fr}}
+
+  .card{
+    background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:22px 22px 20px;
+    transition:transform .2s,border-color .2s,background .2s;
+  }
+  .card:hover{transform:translateY(-3px);border-color:var(--bd-hi);background:var(--card-hi)}
+  .card h3{margin:0 0 8px;font-size:17px;letter-spacing:-.2px;display:flex;align-items:center;gap:9px}
+  .card p{margin:0;color:var(--mu);font-size:14.5px}
+  .ico{
+    width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:17px;
+    background:linear-gradient(135deg,rgba(59,130,246,.20),rgba(168,85,247,.18));
+    border:1px solid var(--bd);flex:none;
+  }
+
+  .figure{width:100%;display:block;border-radius:16px;border:1px solid var(--bd);margin:6px 0 0}
+
+  /* ---------- tier table ---------- */
+  .tbl{width:100%;border-collapse:collapse;margin-top:26px;font-size:14.5px}
+  .tbl th,.tbl td{padding:13px 14px;text-align:left;border-bottom:1px solid var(--bd);vertical-align:top}
+  .tbl th{font-size:13px;color:var(--mu);font-weight:600;letter-spacing:.4px;background:rgba(255,255,255,.03)}
+  .tbl td:last-child,.tbl th:last-child{text-align:right;white-space:nowrap}
+  .tbl tr:hover td{background:rgba(255,255,255,.028)}
+  .tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600}
+  .t-a{background:rgba(59,130,246,.18);color:#93c5fd}
+  .t-b1{background:rgba(20,184,166,.18);color:#5eead4}
+  .t-b2{background:rgba(244,63,94,.20);color:#fda4af}
+  .t-c{background:rgba(245,158,11,.18);color:#fcd34d}
+  code{font-family:var(--mono);font-size:.88em;background:rgba(255,255,255,.075);padding:1.5px 6px;border-radius:5px;color:#cfe0ff}
+
+  /* ---------- steps ---------- */
+  .steps{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-top:30px;counter-reset:s}
+  @media(max-width:980px){.steps{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:560px){.steps{grid-template-columns:repeat(2,1fr)}}
+  .step{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:18px 14px;position:relative}
+  .step .n{
+    width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:15px;
+    background:rgba(59,130,246,.16);color:#93c5fd;border:1px solid rgba(59,130,246,.35);margin-bottom:11px;
+  }
+  .step b{display:block;font-size:15px;margin-bottom:3px}
+  .step span{font-size:13px;color:var(--mu)}
+  .step.gate{border-color:rgba(251,113,133,.45);background:rgba(244,63,94,.075)}
+  .step.gate .n{background:rgba(244,63,94,.18);color:#fda4af;border-color:rgba(251,113,133,.45)}
+  .step.gate::after{
+    content:"硬门槛";position:absolute;top:-10px;right:10px;font-size:11px;font-weight:700;
+    background:#fb7185;color:#2a0b12;padding:2px 8px;border-radius:999px;
+  }
+
+  /* ---------- code ---------- */
+  .code{
+    position:relative;background:#070c16;border:1px solid var(--bd);border-radius:14px;
+    margin-top:22px;overflow:hidden;
+  }
+  .code-top{
+    display:flex;align-items:center;gap:8px;padding:11px 16px;border-bottom:1px solid var(--bd);
+    background:rgba(255,255,255,.03);
+  }
+  .code-top i{width:11px;height:11px;border-radius:50%;display:block}
+  .code-top .t{margin-left:8px;font-size:12.5px;color:var(--dim);font-family:var(--mono)}
+  .copy{
+    margin-left:auto;font-size:12.5px;font-family:var(--sans);color:var(--mu);cursor:pointer;
+    background:rgba(255,255,255,.06);border:1px solid var(--bd);border-radius:7px;padding:4px 12px;
+    transition:all .16s;
+  }
+  .copy:hover{color:var(--tx);background:rgba(255,255,255,.12)}
+  .copy.ok{color:#4ade80;border-color:rgba(74,222,128,.45)}
+  pre{margin:0;padding:18px 20px;overflow-x:auto;font-family:var(--mono);font-size:13.5px;line-height:1.85;color:#c3d2e8}
+  pre .c{color:#5d7395}
+  pre .g{color:#4ade80}
+  pre .p{color:#93c5fd}
+  pre .r{color:#fb7185}
+  pre .y{color:#fcd34d}
+  pre .w{color:#e6edf7}
+
+  /* ---------- rules ---------- */
+  .rules{margin-top:26px;display:grid;gap:11px}
+  .rule{display:flex;gap:14px;align-items:flex-start;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:15px 18px}
+  .rule .k{
+    flex:none;width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-size:13px;font-weight:700;
+    background:rgba(96,165,250,.16);color:#93c5fd;border:1px solid rgba(96,165,250,.3);
+  }
+  .rule p{margin:0;font-size:14.5px;color:var(--mu)}
+  .rule p b{color:var(--tx)}
+
+  /* ---------- tabs ---------- */
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:24px 0 0}
+  .tab{
+    padding:8px 16px;border-radius:999px;font-size:13.5px;font-weight:600;cursor:pointer;
+    background:var(--card);border:1px solid var(--bd);color:var(--mu);transition:all .16s;
+  }
+  .tab:hover{color:var(--tx);border-color:var(--bd-hi)}
+  .tab.on{background:linear-gradient(135deg,rgba(37,99,235,.9),rgba(124,58,237,.9));color:#fff;border-color:transparent}
+  .pane{display:none}
+  .pane.on{display:block}
+
+  /* ---------- faq ---------- */
+  details.faq{
+    background:var(--card);border:1px solid var(--bd);border-radius:13px;margin-bottom:11px;overflow:hidden;
+    transition:border-color .2s,background .2s;
+  }
+  details.faq[open]{border-color:var(--bd-hi);background:var(--card-hi)}
+  details.faq summary{
+    cursor:pointer;padding:16px 20px;font-weight:600;font-size:15.5px;list-style:none;
+    display:flex;align-items:center;gap:10px;
+  }
+  details.faq summary::-webkit-details-marker{display:none}
+  details.faq summary::before{
+    content:"+";font-family:var(--mono);font-weight:700;color:var(--ac);font-size:18px;line-height:1;
+    transition:transform .2s;width:14px;flex:none;
+  }
+  details.faq[open] summary::before{content:"−"}
+  details.faq .ans{padding:0 20px 18px 44px;color:var(--mu);font-size:14.5px}
+  details.faq .ans p{margin:0 0 10px}
+  details.faq .ans p:last-child{margin-bottom:0}
+
+  /* ---------- reveal ---------- */
+  .rv{opacity:0;transform:translateY(18px);transition:opacity .6s cubic-bezier(.22,1,.36,1),transform .6s cubic-bezier(.22,1,.36,1)}
+  .rv.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){
+    .rv{opacity:1;transform:none;transition:none}
+    html{scroll-behavior:auto}
+  }
+
+  footer{
+    margin-top:88px;border-top:1px solid var(--bd);padding:40px 0 60px;text-align:center;color:var(--dim);font-size:14px;
+  }
+  footer a{color:var(--mu);text-decoration:none;border-bottom:1px solid transparent;transition:.18s}
+  footer a:hover{color:var(--tx);border-color:var(--bd-hi)}
+  .warn{
+    margin-top:24px;padding:16px 20px;border-radius:13px;font-size:14px;color:#fecdd3;
+    background:rgba(244,63,94,.09);border:1px solid rgba(251,113,133,.32);
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-in">
+    <div class="brand"><span class="dot"></span>WorkBuddy 任务垃圾清理</div>
+    <div class="nav-links">
+      <a href="#why">为什么</a>
+      <a href="#tiers">四级分级</a>
+      <a href="#flow">流程</a>
+      <a href="#install">安装</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <a class="btn btn-g nav-cta" href="https://github.com/Lemon177777/workbuddy-task-cleanup">GitHub ↗</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <header>
+    <img class="hero-img" src="assets/banner.svg" alt="WorkBuddy 任务垃圾清理" />
+    <div class="badges">
+      <img src="assets/badge-license.svg" alt="license MIT" />
+      <img src="assets/badge-python.svg" alt="python 3.8+ no deps" />
+      <img src="assets/badge-platform.svg" alt="Windows macOS Linux" />
+      <img src="assets/badge-safety.svg" alt="read-only first" />
+      <img src="assets/badge-version.svg" alt="version v1.0.1" />
+    </div>
+    <div class="hero-cta">
+      <a class="btn btn-p" href="#install">开始使用 →</a>
+      <a class="btn btn-g" href="#why">它到底做什么</a>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><b>≈ 3.0 GB</b><span>一次实测量可回收</span></div>
+      <div class="stat"><b>80 个</b><span>已删会话定位</span></div>
+      <div class="stat"><b>4 级</b><span>分层确认，逐级授权</span></div>
+      <div class="stat"><b>0 依赖</b><span>纯 Python 标准库</span></div>
+    </div>
+  </header>
+
+  <section id="why">
+    <div class="eyebrow rv">Why</div>
+    <h2 class="rv">删掉的对话，文件并没有跟着走</h2>
+    <p class="sub rv">WorkBuddy 用久了，磁盘上会悄悄堆起一批"孤儿"—— 任务记录删了，但磁盘上的缓存、转录、日志还留着。</p>
+
+    <div class="grid g3">
+      <div class="card rv"><h3><span class="ico">💾</span>磁盘莫名少了几 GB</h3><p>删掉的对话，磁盘上的文件并没有跟着一起走。用时无感，翻目录时心惊。</p></div>
+      <div class="card rv"><h3><span class="ico">🗑️</span>侧边栏没了，空间还占着</h3><p>任务记录删了，但 <code>tasks/</code>、<code>changes-detail/</code>、<code>projects/</code> 下的数据留了下来。</p></div>
+      <div class="card rv"><h3><span class="ico">📁</span>一串时间戳目录</h3><p>每次新建对话都会生成一个 playground 工作区，对话删了，目录还在。</p></div>
+      <div class="card rv"><h3><span class="ico">🧹</span>想清理又不敢下手</h3><p>分不清哪个目录属于"活着的"任务，删错了就回不来 —— 这才是最劝退的。</p></div>
+      <div class="card rv"><h3><span class="ico">🐌</span>索引与日志越来越臃肿</h3><p><code>traces/</code> 和沙箱日志能悄悄涨到好几个 GB，却没人提醒你。</p></div>
+      <div class="card rv"><h3><span class="ico">🛡️</span>通用清理软件不敢用</h3><p>它们只看"文件夹大不大"，不认识 WorkBuddy 的数据结构，容易误伤。</p></div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="eyebrow rv">Principle</div>
+    <h2 class="rv">凭什么判断"这是垃圾"</h2>
+    <p class="sub rv">不猜、不看目录时间、不信侧边栏 —— 只认一个权威依据：数据库里的 <code>deleted_at</code> 字段。</p>
+
+    <div class="code rv">
+      <div class="code-top">
+        <i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i>
+        <span class="t">~/.workbuddy/workbuddy.db · sessions 表</span>
+      </div>
+      <pre><span class="c">-- 唯一权威判定依据（脚本以 mode=ro 只读打开，绝不写入）</span>
+<span class="p">SELECT</span> id, cwd, title, deleted_at <span class="p">FROM</span> sessions;
+
+<span class="w">deleted_at</span> <span class="p">IS NULL</span>   → <span class="g">✅ 存活会话</span>   其数据一律不动
+<span class="w">deleted_at</span> 有值      → <span class="r">🗑️ 已删除任务</span>  磁盘残留即"垃圾"</pre>
+    </div>
+
+    <div class="grid g3" style="margin-top:22px">
+      <div class="card rv"><h3><span class="ico">❌</span>不能看目录时间</h3><p>存活会话的缓存也可能很久没更新，会误伤。</p></div>
+      <div class="card rv"><h3><span class="ico">❌</span>不能看目录是否为空</h3><p>空目录也可能正被存活会话引用着。</p></div>
+      <div class="card rv"><h3><span class="ico">❌</span>不能信侧边栏列表</h3><p>那只是快照，而且不含后台任务。</p></div>
+    </div>
+  </section>
+
+  <section id="tiers">
+    <div class="eyebrow rv">Tiers</div>
+    <h2 class="rv">四级分级，分开确认</h2>
+    <p class="sub rv">不同级别的风险天差地别。所以拆开处理 —— 低风险的批量清，动到你成果的逐个过目。</p>
+
+    <img class="figure rv" src="assets/tiers.svg" alt="四级分级示意" />
+
+    <table class="tbl rv">
+      <thead>
+        <tr><th>级别</th><th>内容</th><th>典型路径</th><th>风险</th><th>实测体量</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="tag t-a">A</span></td>
+          <td>内部缓存与会话转录</td>
+          <td><code>tasks/</code> <code>changes-detail/</code> <code>file-history/</code> <code>projects/</code></td>
+          <td>🟢 低</td><td>≈ 128 MB</td>
+        </tr>
+        <tr>
+          <td><span class="tag t-b1">B1</span></td>
+          <td>空壳孤儿工作区</td>
+          <td><code>~/WorkBuddy/&lt;时间戳&gt;/</code> 只剩 <code>.workbuddy/</code></td>
+          <td>🟢 低</td><td>≈ 16 KB</td>
+        </tr>
+        <tr>
+          <td><span class="tag t-b2">B2</span></td>
+          <td><b>含成果文件</b>的孤儿工作区</td>
+          <td>里面还有你的报告 / 源码 / 图片</td>
+          <td>🔴 <b>高</b></td><td>≈ 146.5 MB</td>
+        </tr>
+        <tr>
+          <td><span class="tag t-c">C</span></td>
+          <td>诊断日志与运行追踪</td>
+          <td><code>traces/</code> <code>logs/&lt;日期&gt;/</code> <code>logs/sandbox/</code></td>
+          <td>🟡 中</td><td>≈ 2.75 GB</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="warn rv">
+      ⚠️ <b>B2 是唯一需要逐个人工过目的类别</b> —— 那里面装的是你自己的劳动成果，不是缓存。删 C 之前也请想清楚：删完就失去了历史排障线索。
+    </div>
+  </section>
+
+  <section id="flow">
+    <div class="eyebrow rv">Flow</div>
+    <h2 class="rv">顺序不可颠倒</h2>
+    <p class="sub rv">第 3 步是硬门槛：没拿到你明确的选择之前，一个字节都不会删。</p>
+
+    <div class="steps">
+      <div class="step rv"><div class="n">0</div><b>定位环境</b><span>找到 DB 与工作区</span></div>
+      <div class="step rv"><div class="n">1</div><b>只读盘点</b><span>wb_scan.py</span></div>
+      <div class="step rv"><div class="n">2</div><b>分类呈现</b><span>列清单与体积</span></div>
+      <div class="step gate rv"><div class="n">3</div><b>用户确认</b><span>未确认不删任何东西</span></div>
+      <div class="step rv"><div class="n">4</div><b>执行清理</b><span>wb_clean.py</span></div>
+      <div class="step rv"><div class="n">5</div><b>二次核验</b><span>孤儿归零</span></div>
+    </div>
+
+    <img class="figure rv" src="assets/flow.svg" alt="执行流程图" style="margin-top:26px" />
+  </section>
+
+  <section id="install">
+    <div class="eyebrow rv">Install</div>
+    <h2 class="rv">三步开始</h2>
+    <p class="sub rv">两个脚本只用标准库，Python 3.8+ 即可，不需要 <code>pip install</code> 任何东西。</p>
+
+    <div class="tabs rv">
+      <div class="tab on" data-p="p1">① 装 Skill</div>
+      <div class="tab" data-p="p2">② 直接跑脚本</div>
+      <div class="tab" data-p="p3">③ 看报告</div>
+    </div>
+
+    <div class="pane on" id="p1">
+      <div class="code rv">
+        <div class="code-top">
+          <i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i>
+          <span class="t">下载 dist/workbuddy-task-cleanup.zip 后解压到 skills 目录</span>
+          <button class="copy" data-c="Expand-Archive -Path workbuddy-task-cleanup.zip -DestinationPath &quot;$env:USERPROFILE\.workbuddy\skills&quot; -Force">复制</button>
+        </div>
+        <pre><span class="c"># Windows（PowerShell）</span>
+<span class="g">Expand-Archive</span> -Path workbuddy-task-cleanup.zip -DestinationPath <span class="y">"$env:USERPROFILE\.workbuddy\skills"</span> -Force
+
+<span class="c"># macOS / Linux</span>
+<span class="g">unzip</span> workbuddy-task-cleanup.zip -d <span class="y">~/.workbuddy/skills/</span>
+
+<span class="c"># 或者直接 clone</span>
+<span class="g">git clone</span> https://github.com/Lemon177777/workbuddy-task-cleanup.git \
+  <span class="y">~/.workbuddy/skills/workbuddy-task-cleanup</span></pre>
+      </div>
+      <div class="card rv" style="margin-top:16px">
+        <h3><span class="ico">💬</span>装好后，直接对 WorkBuddy 说</h3>
+        <p>「清理 workbuddy 垃圾」 · 「WorkBuddy 占空间太大」 · 「清理已删除任务的残留」</p>
+      </div>
+    </div>
+
+    <div class="pane" id="p2">
+      <div class="code rv">
+        <div class="code-top">
+          <i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i>
+          <span class="t">bash · 不装 Skill 也能跑</span>
+          <button class="copy" data-c="python scripts/wb_scan.py --json ~/wb_cleanup_report.json
+python scripts/wb_clean.py --tiers A,B1,C
+python scripts/wb_clean.py --tiers A,B1,C --apply
+python scripts/wb_scan.py">复制</button>
+        </div>
+        <pre><span class="c"># ① 只读盘点 —— 放心跑，绝不修改任何文件</span>
+<span class="g">python</span> scripts/wb_scan.py --json ~/wb_cleanup_report.json
+
+<span class="c"># ② 预览将删除的内容（默认 dry-run，不落盘）</span>
+<span class="g">python</span> scripts/wb_clean.py --tiers A,B1,C
+
+<span class="c"># ③ 看过预览、确认无误后，才真正执行</span>
+<span class="g">python</span> scripts/wb_clean.py --tiers A,B1,C <span class="r">--apply</span>
+
+<span class="c"># ④ 想连 B2 一起清，必须额外显式声明（它含你的成果文件）</span>
+<span class="g">python</span> scripts/wb_clean.py --tiers A,B1,C,B2 <span class="r">--include-b2 --apply</span>
+
+<span class="c"># ⑤ 二次核验（务必重跑一次，删除钩子可能延迟落盘）</span>
+<span class="g">python</span> scripts/wb_scan.py</pre>
+      </div>
+    </div>
+
+    <div class="pane" id="p3">
+      <img class="figure rv" src="assets/terminal.svg" alt="wb_scan.py 只读盘点输出示例" />
+    </div>
+  </section>
+
+  <section id="safe">
+    <div class="eyebrow rv">Safety</div>
+    <h2 class="rv">安全设计</h2>
+    <p class="sub rv">这是一个"会删文件"的工具。所以默认动作必须是保守的，任何"多做一步"都需要你显式授权。</p>
+
+    <img class="figure rv" src="assets/safety.svg" alt="判定依据与永久豁免名单" />
+
+    <div class="grid g3 rv" style="margin-top:22px">
+      <div class="card"><h3><span class="ico">①</span>默认 dry-run</h3><p>不加 <code>--apply</code>，脚本只打印"将删什么"，绝不动盘。</p></div>
+      <div class="card"><h3><span class="ico">②</span>双重显式授权</h3><p>B2 必须同时给出 <code>--tiers B2</code> 和 <code>--include-b2</code>。</p></div>
+      <div class="card"><h3><span class="ico">③</span>事后完整性校验</h3><p>每次清理后自动检查存活会话工作区，缺失必须为 <b>0</b>。</p></div>
+    </div>
+
+    <div class="rules">
+      <div class="rule rv"><span class="k">1</span><p><b>先扫描 → 后呈现 → 再确认 → 末执行</b>，顺序不可颠倒。</p></div>
+      <div class="rule rv"><span class="k">2</span><p><b>不动数据库。</b>只读打开（<code>mode=ro</code>），绝不写入一个字节。</p></div>
+      <div class="rule rv"><span class="k">3</span><p><b>不碰 <code>blobs/</code></b> —— 那是内容寻址存储，存活任务也在引用，删了会破坏数据。</p></div>
+      <div class="rule rv"><span class="k">4</span><p><b>B2 必须逐个列文件 + 二次确认</b> —— 那是你的成果，不是缓存。</p></div>
+      <div class="rule rv"><span class="k">5</span><p><b>删完必须二次核验</b>，并报告「存活会话工作区缺失 = 0」。</p></div>
+      <div class="rule rv"><span class="k">6</span><p><b>保留当天的日志</b> <code>logs/&lt;今天&gt;/</code> 与 <code>logs/sandbox/&lt;今天&gt;/</code>。</p></div>
+      <div class="rule rv"><span class="k">7</span><p>要求永久删除时，<b>先加粗警告并列出受影响文件路径</b>，取得明确同意后才动手。</p></div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="eyebrow rv">FAQ</div>
+    <h2 class="rv">常见问题</h2>
+
+    <details class="faq rv"><summary>会删掉我正在使用的对话吗？</summary><div class="ans">
+      <p>不会。判定只依据 <code>sessions.deleted_at</code>：<code>IS NULL</code> 的存活会话，其工作区与数据一律跳过。脚本还会自动把当前正在运行的会话工作区排除在外，清理后额外校验一次完整性。</p>
+    </div></details>
+
+    <details class="faq rv"><summary>我删掉的对话里的文件，还能找回来吗？</summary><div class="ans">
+      <p>只要<b>还没清理过</b>，它们大概率还躺在 <code>~/WorkBuddy/&lt;时间戳&gt;/</code> 里 —— 这正是 <b>B2</b> 存在的意义。把它们找回来，是可回收的那 146 MB 之外、更值钱的东西。</p>
+    </div></details>
+
+    <details class="faq rv"><summary>为什么清理完，目录好像还在？</summary><div class="ans">
+      <p>这是本机 safe-delete 钩子的已知行为：删除会被转成回收站操作，且可能在 <code>rmtree()</code> 返回<b>之后</b>才真正落盘。所以必须重跑一次 <code>wb_scan.py</code> 做二次核验，不要仅凭第一轮输出下结论。</p>
+    </div></details>
+
+    <details class="faq rv"><summary><code>logs/sandbox</code> 整目录删除失败？</summary><div class="ans">
+      <p>已知坑。整目录删会报 <code>Some operations were aborted</code>，必须按日期子目录（如 <code>20261009/</code>）逐个删。脚本已经这么做了，并且会保留当天。</p>
+    </div></details>
+
+    <details class="faq rv"><summary>macOS / Linux 能用吗？</summary><div class="ans">
+      <p>能。两个脚本纯标准库，路径基于 <code>~/.workbuddy</code> 与 <code>~/WorkBuddy</code>，三个平台通用。用 <code>python3</code> 代替 <code>python</code> 即可。</p>
+    </div></details>
+
+    <details class="faq rv"><summary>会不会动到我自己的项目文件？</summary><div class="ans">
+      <p>不会。清理范围只有两处：<code>~/.workbuddy/</code> 内部的缓存与日志，以及 <code>~/WorkBuddy/&lt;时间戳&gt;/</code> 下的<b>孤儿</b>工作区。你在别处创建的项目目录，不在扫描范围内。</p>
+    </div></details>
+
+    <details class="faq rv"><summary>能不能定期自动清理？</summary><div class="ans">
+      <p>可以配一个定时任务只跑<b>只读盘点</b>，把报告推给你；但删除动作建议始终保留人工确认 —— 尤其 B2，那是你的成果文件，不该被自动化悄悄带走。</p>
+    </div></details>
+  </section>
+
+  <footer>
+    <p style="font-size:15px;color:var(--tx);font-weight:600;margin:0 0 10px">删掉的对话，别再占着你的硬盘。</p>
+    <p style="margin:0 0 18px">
+      <a href="https://github.com/Lemon177777/workbuddy-task-cleanup">GitHub 仓库</a> ·
+      <a href="../CHANGELOG.md">更新日志</a> ·
+      <a href="../LICENSE">MIT 许可</a>
+    </p>
+    <p style="margin:0;font-size:13px">
+      实测参考（2026-10-11，80 个已删会话 / 412 个会话总数）：A ≈ 128 MB · B1 16 KB · B2 146.5 MB · C ≈ 2.75 GB
+    </p>
+    <p style="margin:16px 0 0;font-size:13px;color:var(--dim)">
+      ⚠️ 本工具会删除磁盘文件。虽然设计了「默认预览 + 分级确认 + 事后校验」三道保险，仍请在看到文件清单并自行判断后再确认执行。
+    </p>
+    <p style="margin:22px 0 0;font-size:13px">
+      MIT © 2026 Lemon177777 · 用 ❤️ 和一点点强迫症做的
+    </p>
+  </footer>
+
+</div>
+
+<script>
+  // tabs
+  document.querySelectorAll('.tab').forEach(function(t){
+    t.addEventListener('click',function(){
+      document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('on')});
+      document.querySelectorAll('.pane').forEach(function(x){x.classList.remove('on')});
+      t.classList.add('on');
+      document.getElementById(t.dataset.p).classList.add('on');
+    });
+  });
+
+  // copy
+  document.querySelectorAll('.copy').forEach(function(b){
+    b.addEventListener('click',function(){
+      var txt=b.dataset.c||'';
+      var done=function(){b.textContent='已复制 ✓';b.classList.add('ok');
+        setTimeout(function(){b.textContent='复制';b.classList.remove('ok')},1600)};
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(txt).then(done).catch(function(){});
+      }else{
+        var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);
+        ta.select();try{document.execCommand('copy');done()}catch(e){}document.body.removeChild(ta);
+      }
+    });
+  });
+
+  // reveal on scroll
+  (function(){
+    var els=document.querySelectorAll('.rv');
+    if(!('IntersectionObserver' in window)){els.forEach(function(e){e.classList.add('in')});return}
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if(e.isIntersecting){
+          var sibs=Array.prototype.slice.call(e.target.parentNode.children).filter(function(c){return c.classList.contains('rv')});
+          var i=sibs.indexOf(e.target); if(i<0)i=0;
+          e.target.style.transitionDelay=Math.min(i,6)*60+'ms';
+          e.target.classList.add('in');
+          io.unobserve(e.target);
+        }
+      });
+    },{threshold:.12,rootMargin:'0px 0px -60px 0px'});
+    els.forEach(function(e){io.observe(e)});
+  })();
+</script>
+</body>
+</html>

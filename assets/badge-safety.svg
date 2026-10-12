@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="20" viewBox="0 0 180 20" role="img" aria-label="safety: read-only first">
+  <title>safety: read-only first</title>
+  <defs>
+    <linearGradient id="g2" x2="0" y2="100%">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".20"/>
+      <stop offset="1" stop-color="#000000" stop-opacity=".08"/>
+    </linearGradient>
+    <clipPath id="c2"><rect width="180" height="20" rx="3"/></clipPath>
+  </defs>
+  <g clip-path="url(#c2)">
+    <rect width="60" height="20" fill="#4b5563"/>
+    <rect x="60" width="120" height="20" fill="#059669"/>
+    <rect width="180" height="20" fill="url(#g2)"/>
+  </g>
+  <g fill="#ffffff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11">
+    <text x="30.0" y="15" fill="#000" fill-opacity=".30">safety</text>
+    <text x="30.0" y="14">safety</text>
+    <text x="120.0" y="15" fill="#000" fill-opacity=".30">read-only first</text>
+    <text x="120.0" y="14">read-only first</text>
+  </g>
+</svg>

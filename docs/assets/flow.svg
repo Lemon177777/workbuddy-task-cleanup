@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 290" width="100%" role="img" aria-label="执行流程：定位 → 只读盘点 → 分类呈现 → 用户确认 → 执行清理 → 二次核验">
+  <title>执行流程与硬门槛</title>
+  <defs>
+    <linearGradient id="fbg" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0b1222"/>
+      <stop offset="50%" stop-color="#101a31"/>
+      <stop offset="100%" stop-color="#0b1222"/>
+    </linearGradient>
+    <linearGradient id="gate" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f43f5e"/>
+      <stop offset="100%" stop-color="#fb7185"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <filter id="fglow" x="-70%" y="-70%" width="240%" height="240%">
+      <feGaussianBlur stdDeviation="12"/>
+    </filter>
+  </defs>
+
+  <rect width="1280" height="290" fill="url(#fbg)"/>
+
+  <g font-family="ui-sans-serif,-apple-system,'Segoe UI','Microsoft YaHei','PingFang SC',sans-serif">
+    <text x="56" y="56" font-size="23.5" font-weight="700" fill="#ffffff">执行流程</text>
+    <text x="170" y="56" font-size="16.5" fill="#8fa6c9">顺序不可颠倒 · Step 3 是硬门槛</text>
+    <rect x="56" y="72" width="60" height="3" rx="1.5" fill="#60a5fa"/>
+  </g>
+
+  <!-- connector -->
+  <line x1="118" y1="152" x2="1162" y2="152" stroke="#ffffff" stroke-opacity="0.12" stroke-width="2"/>
+  <line x1="118" y1="152" x2="672" y2="152" stroke="url(#ring)" stroke-width="2.5"/>
+
+  <g font-family="ui-sans-serif,-apple-system,'Segoe UI','Microsoft YaHei','PingFang SC',sans-serif">
+
+    <!-- Step 0 -->
+    <circle cx="118" cy="152" r="32" fill="#0f1930" stroke="#3b82f6" stroke-width="2.5"/>
+    <text x="118" y="161" text-anchor="middle" font-size="25.5" font-weight="700" fill="#93c5fd">0</text>
+    <text x="118" y="216" text-anchor="middle" font-size="16.5" fill="#dfe9fb">定位环境</text>
+    <text x="118" y="240" text-anchor="middle" font-size="14.5" fill="#7b8dad">找到 DB 与工作区</text>
+
+    <!-- Step 1 -->
+    <circle cx="328" cy="152" r="32" fill="#0f1930" stroke="#3b82f6" stroke-width="2.5"/>
+    <text x="328" y="161" text-anchor="middle" font-size="25.5" font-weight="700" fill="#93c5fd">1</text>
+    <text x="328" y="216" text-anchor="middle" font-size="16.5" fill="#dfe9fb">只读盘点</text>
+    <text x="328" y="240" text-anchor="middle" font-size="14.5" fill="#7b8dad">wb_scan.py</text>
+
+    <!-- Step 2 -->
+    <circle cx="538" cy="152" r="32" fill="#0f1930" stroke="#3b82f6" stroke-width="2.5"/>
+    <text x="538" y="161" text-anchor="middle" font-size="25.5" font-weight="700" fill="#93c5fd">2</text>
+    <text x="538" y="216" text-anchor="middle" font-size="16.5" fill="#dfe9fb">分类呈现</text>
+    <text x="538" y="240" text-anchor="middle" font-size="14.5" fill="#7b8dad">列清单与体积</text>
+
+    <!-- Step 3 : gate -->
+    <circle cx="672" cy="152" r="46" fill="#f43f5e" opacity="0.30" filter="url(#fglow)"/>
+    <circle cx="672" cy="152" r="34" fill="#191024" stroke="url(#gate)" stroke-width="3"/>
+    <text x="672" y="162" text-anchor="middle" font-size="25" font-weight="700" fill="#fda4af">3</text>
+    <rect x="596" y="92" width="152" height="26" rx="13" fill="#f43f5e" opacity="0.20"/>
+    <text x="672" y="110" text-anchor="middle" font-size="15" fill="#fda4af">⚠ 硬门槛</text>
+    <text x="672" y="216" text-anchor="middle" font-size="16.5" font-weight="600" fill="#ffd9e0">用户确认</text>
+    <text x="672" y="240" text-anchor="middle" font-size="14.5" fill="#b9869a">未确认不删任何东西</text>
+
+    <!-- Step 4 -->
+    <circle cx="842" cy="152" r="32" fill="#0f1930" stroke="#8b5cf6" stroke-width="2.5"/>
+    <text x="842" y="161" text-anchor="middle" font-size="25.5" font-weight="700" fill="#c4b5fd">4</text>
+    <text x="842" y="216" text-anchor="middle" font-size="16.5" fill="#dfe9fb">执行清理</text>
+    <text x="842" y="240" text-anchor="middle" font-size="14.5" fill="#7b8dad">wb_clean.py</text>
+
+    <!-- Step 5 -->
+    <circle cx="1052" cy="152" r="32" fill="#0f1930" stroke="#22c55e" stroke-width="2.5"/>
+    <text x="1052" y="161" text-anchor="middle" font-size="25.5" font-weight="700" fill="#86efac">5</text>
+    <text x="1052" y="216" text-anchor="middle" font-size="16.5" fill="#dfe9fb">二次核验</text>
+    <text x="1052" y="240" text-anchor="middle" font-size="14.5" fill="#7b8dad">孤儿归零</text>
+
+    <text x="1224" y="147" text-anchor="middle" font-size="15.5" fill="#7b8dad">完成</text>
+    <text x="1224" y="167" text-anchor="middle" font-size="15.5" fill="#7b8dad">✓</text>
+  </g>
+
+  <g font-family="ui-sans-serif,-apple-system,'Segoe UI','Microsoft YaHei','PingFang SC',sans-serif">
+    <text x="56" y="278" font-size="15" fill="#5d6d8a">默认 dry-run：不加 --apply 只打印将删内容，绝不落盘</text>
+  </g>
+</svg>

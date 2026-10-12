@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 430" width="100%" role="img" aria-label="四级分类：A 内部缓存、B1 空壳工作区、B2 含成果工作区、C 诊断日志">
+  <title>四级分级清理</title>
+  <defs>
+    <linearGradient id="tbg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0c1324"/>
+      <stop offset="100%" stop-color="#0a0f1e"/>
+    </linearGradient>
+    <linearGradient id="barA" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <linearGradient id="barB1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#14b8a6"/><stop offset="100%" stop-color="#22d3ee"/>
+    </linearGradient>
+    <linearGradient id="barB2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f43f5e"/><stop offset="100%" stop-color="#fb7185"/>
+    </linearGradient>
+    <linearGradient id="barC" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f59e0b"/><stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1280" height="430" fill="url(#tbg)"/>
+
+  <g font-family="ui-sans-serif,-apple-system,'Segoe UI','Microsoft YaHei','PingFang SC',sans-serif">
+    <text x="56" y="62" font-size="28.5" font-weight="700" fill="#ffffff">四级分级</text>
+    <text x="56" y="92" font-size="17.5" fill="#8fa6c9">按「风险 × 收益」分层，先清低风险，高危项逐个过目</text>
+    <rect x="56" y="110" width="72" height="3" rx="1.5" fill="#60a5fa"/>
+  </g>
+
+  <!-- Card A -->
+  <g font-family="ui-sans-serif,-apple-system,'Segoe UI','Microsoft YaHei','PingFang SC',sans-serif">
+    <rect x="56" y="146" width="272" height="232" rx="18" fill="#ffffff" opacity="0.045"/>
+    <rect x="56.5" y="146.5" width="271" height="231" rx="17.5" fill="none" stroke="#ffffff" stroke-opacity="0.10"/>
+    <rect x="56" y="146" width="272" height="5" rx="2.5" fill="url(#barA)"/>
+    <text x="86" y="212" font-size="42" font-weight="700" fill="#60a5fa">A</text>
+    <text x="86" y="248" font-size="20.5" font-weight="600" fill="#ffffff">内部缓存与转录</text>
+    <text x="86" y="278" font-size="16" fill="#93a8c9">tasks/ · artifact-index/</text>
+    <text x="86" y="300" font-size="16" fill="#93a8c9">changes-detail/ · projects/</text>
+    <rect x="86" y="320" width="76" height="26" rx="13" fill="#22c55e" opacity="0.16"/>
+    <text x="124" y="338" text-anchor="middle" font-size="14.5" fill="#4ade80">风险 低</text>
+    <text x="298" y="338" text-anchor="end" font-size="17.5" fill="#cfdcf3">≈ 128 MB</text>
+    <text x="298" y="360" text-anchor="end" font-size="14.5" fill="#7b8dad">36 个目录</text>
+  </g>
+
+  <!-- Card B1 -->
+  <g font-family="ui-sans-serif,-apple-system,'Segoe UI','Microsoft YaHei','PingFang SC',sans-serif">
+    <rect x="352" y="146" width="272" height="232" rx="18" fill="#ffffff" opacity="0.045"/>
+    <rect x="352.5" y="146.5" width="271" height="231" rx="17.5" fill="none" stroke="#ffffff" stroke-opacity="0.10"/>
+    <rect x="352" y="146" width="272" height="5" rx="2.5" fill="url(#barB1)"/>
+    <text x="382" y="212" font-size="42" font-weight="700" fill="#2dd4bf">B1</text>
+    <text x="382" y="248" font-size="20.5" font-weight="600" fill="#ffffff">空壳孤儿工作区</text>
+    <text x="382" y="278" font-size="16" fill="#93a8c9">只剩 .workbuddy/ 的</text>
+    <text x="382" y="300" font-size="16" fill="#93a8c9">~/WorkBuddy/&lt;时间戳&gt;/</text>
+    <rect x="382" y="320" width="76" height="26" rx="13" fill="#22c55e" opacity="0.16"/>
+    <text x="420" y="338" text-anchor="middle" font-size="14.5" fill="#4ade80">风险 低</text>
+    <text x="594" y="338" text-anchor="end" font-size="17.5" fill="#cfdcf3">≈ 16 KB</text>
+    <text x="594" y="360" text-anchor="end" font-size="14.5" fill="#7b8dad">36 个目录</text>
+  </g>
+
+  <!-- Card B2 -->
+  <g font-family="ui-sans-serif,-apple-system,'Segoe UI','Microsoft YaHei','PingFang SC',sans-serif">
+    <rect x="648" y="146" width="272" height="232" rx="18" fill="#f43f5e" opacity="0.075"/>
+    <rect x="648.5" y="146.5" width="271" height="231" rx="17.5" fill="none" stroke="#fb7185" stroke-opacity="0.38"/>
+    <rect x="648" y="146" width="272" height="5" rx="2.5" fill="url(#barB2)"/>
+    <text x="678" y="212" font-size="42" font-weight="700" fill="#fb7185">B2</text>
+    <text x="678" y="248" font-size="20.5" font-weight="600" fill="#ffffff">含成果的孤儿工作区</text>
+    <text x="678" y="278" font-size="16" fill="#93a8c9">报告 / 源码 / 图片还在里面</text>
+    <text x="678" y="300" font-size="16" fill="#93a8c9">删掉就真的没了</text>
+    <rect x="678" y="320" width="86" height="26" rx="13" fill="#f43f5e" opacity="0.22"/>
+    <text x="721" y="338" text-anchor="middle" font-size="14.5" fill="#fda4af">风险 高 ⚠</text>
+    <text x="890" y="338" text-anchor="end" font-size="17.5" fill="#ffd9e0">≈ 146.5 MB</text>
+    <text x="890" y="360" text-anchor="end" font-size="14.5" fill="#b9869a">18 个 · 须逐个确认</text>
+  </g>
+
+  <!-- Card C -->
+  <g font-family="ui-sans-serif,-apple-system,'Segoe UI','Microsoft YaHei','PingFang SC',sans-serif">
+    <rect x="944" y="146" width="280" height="232" rx="18" fill="#ffffff" opacity="0.045"/>
+    <rect x="944.5" y="146.5" width="279" height="231" rx="17.5" fill="none" stroke="#ffffff" stroke-opacity="0.10"/>
+    <rect x="944" y="146" width="280" height="5" rx="2.5" fill="url(#barC)"/>
+    <text x="974" y="212" font-size="42" font-weight="700" fill="#fbbf24">C</text>
+    <text x="974" y="248" font-size="20.5" font-weight="600" fill="#ffffff">诊断日志与追踪</text>
+    <text x="974" y="278" font-size="16" fill="#93a8c9">traces/ · logs/&lt;日期&gt;/</text>
+    <text x="974" y="300" font-size="16" fill="#93a8c9">logs/sandbox/</text>
+    <rect x="974" y="320" width="76" height="26" rx="13" fill="#f59e0b" opacity="0.18"/>
+    <text x="1012" y="338" text-anchor="middle" font-size="14.5" fill="#fcd34d">风险 中</text>
+    <text x="1194" y="338" text-anchor="end" font-size="17.5" fill="#ffe9bd">≈ 2.75 GB</text>
+    <text x="1194" y="360" text-anchor="end" font-size="14.5" fill="#a9946b">体量最大</text>
+  </g>
+
+  <text x="640" y="414" text-anchor="middle" font-size="16" fill="#7b8dad"
+        font-family="ui-sans-serif,-apple-system,'Segoe UI','Microsoft YaHei','PingFang SC',sans-serif">
+    体量为 2026-10-11 实测参考值（80 个已删会话）
+  </text>
+</svg>
